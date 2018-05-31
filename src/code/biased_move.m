@@ -1,29 +1,21 @@
 function [next_point] = biased_move(x_near,points,q_rand,du,dt,b)
 %Hill Climb function
-grad_x = @(x,y) cos(x+x*y)*(1+y);
-grad_y = @(x,y) 3 + cos(x+x*y)*x;
 fun_z = @(x,y) 3*y + sin(x + x*y);
 
 x = x_near(1);
 y = x_near(2);
 
-dx = bsxfun(grad_x,x,y);
-dy = bsxfun(grad_y,x,y);
+tspan = 0:dt/100:dt;
 
-theta_hill = atan2(dy,dx);
 short_dist = inf;
 for iter = 1:3
     R_theta = rand(1)*2*pi;
-    theta = theta_hill + R_theta;
-    
-    dx = cos(theta);
-    dy = sin(theta);
-    dz = bsxfun(fun_z,x + dx,y + dy) - bsxfun(fun_z,x,y);
-    
-    norm_d = norm([dx,dy,dz]);
-    
-    local_x_next = x + dx/norm_d*du;
-    local_y_next = y + dy/norm_d*du;
+
+    [t_sim, x_sim] = ode1(@ClimbHill, tspan, [x; y], [du/dt, R_theta]);
+
+    local_x_next = x_sim(end,1);
+    local_y_next = x_sim(end,2);
+
     local_z_next = bsxfun(fun_z, local_x_next,local_y_next);
     local_point_next = [local_x_next,local_y_next,local_z_next];
     
