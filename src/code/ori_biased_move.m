@@ -8,13 +8,15 @@ nominal_point = zeros(1,3);
 x = x_near(1);
 y = x_near(2);
 
-tspan = 0:dt/100:dt;
+tspan_ode1 = 0:dt/100:dt;
+tspan_ode45 = [0, dt];
 
 short_dist = inf;
 for iter = 1:20
     R_theta = rand(1)*2*pi;
 
-    [t_sim, x_sim] = ode1(@ClimbHill, tspan, [x; y], [du/dt, R_theta]);
+    % [t_sim, x_sim] = ode1(@ClimbHill_ode1, tspan_ode1, [x; y], [du/dt, R_theta]);
+    [t_sim, x_sim] = ode45(@ClimbHill_ode45, tspan_ode45, [x; y; du/dt; R_theta]);
 
     local_x_next = x_sim(end,1);
     local_y_next = x_sim(end,2);

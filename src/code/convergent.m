@@ -5,10 +5,12 @@ z = @(x,y) 3*y + sin(x + x.*y);
 
 [num,~] = size(points);
 
-tspan = 0:dt/100:dt;
+tspan_ode1 = 0:dt/100:dt;
+tspan_ode45 = [0, dt];
 
 for i = 1:num
-	[t_sim, x_sim] = ode1(@ClimbHill, tspan, [points(i,1); points(i,2)], [du/dt, R_theta]);
+	% [t_sim, x_sim] = ode1(@ClimbHill_ode1, tspan_ode1, [points(i,1); points(i,2)], [du/dt, R_theta]);
+	[t_sim, x_sim] = ode45(@ClimbHill_ode45, tspan_ode45, [points(i,1); points(i,2); du/dt; R_theta]);
 	points_next(i,1) = x_sim(end,1);
 	points_next(i,2) = x_sim(end,2);
 end

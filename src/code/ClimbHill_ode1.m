@@ -1,4 +1,4 @@
-function dx = ClimbHill(t, state, control)
+function dx = ClimbHill_ode1(t, state, control)
 	grad_x = @(x,y) cos(x+x*y)*(1+y);
 	grad_y = @(x,y) 3 + cos(x+x*y)*x;
 	fun_z = @(x,y) 3*y + sin(x + x*y);
