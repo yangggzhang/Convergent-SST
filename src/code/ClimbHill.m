@@ -9,15 +9,9 @@ function dx = ClimbHill(t, state, control)
 	dhdx = bsxfun(grad_x, state(1), state(2));
 	dhdy = bsxfun(grad_y, state(1), state(2));
 
-	theta_heading = atan2(dhdy, dhdx) + theta;
+	norm_ = sqrt(dhdx^2 + dhdy^2);
 
-	deltax = cos(theta_heading);
-	deltay = sin(theta_heading);
-	deltah = bsxfun(fun_z, state(1) + deltax, state(2) + deltay) - bsxfun(fun_z, state(1), state(2));
-
-	norm_d = norm([deltax, deltay, deltah]);
-
-	dx(1,1) = deltax/norm_d*u;
-	dx(2,1) = deltay/norm_d*u;
+	dx(1,1) = u*(dhdx * cos(theta)/norm_ - dhdy * sin(theta)/norm_);
+	dx(2,1) = u*(dhdx * sin(theta)/norm_ + dhdy * cos(theta)/norm_);
 
 end
