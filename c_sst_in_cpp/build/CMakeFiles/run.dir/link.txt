@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/run.dir/tests/run.cpp.o  -o ../bin/run -rdynamic ../lib/libSparseRRT.so -lboost_program_options -Wl,-rpath,/home/parallels/Desktop/convergent_sst/lib 

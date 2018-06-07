@@ -1,0 +1,1 @@
+g++ test.cpp -lCGAL -lgmp -I/usr/local/include -o test
