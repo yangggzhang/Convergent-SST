@@ -1,0 +1,4 @@
+/home/parallels/Desktop/convergent_sst/build/CMakeFiles/edit_cache.dir
+/home/parallels/Desktop/convergent_sst/build/CMakeFiles/rebuild_cache.dir
+/home/parallels/Desktop/convergent_sst/build/CMakeFiles/run.dir
+/home/parallels/Desktop/convergent_sst/build/CMakeFiles/SparseRRT.dir
