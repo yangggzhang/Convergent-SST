@@ -15,7 +15,7 @@ public:
 	climb_hill_t()
 	{
 		state_dimension = 2;
-		control_dimension = 1;
+		control_dimension = 2;
 		temp_state = new double[state_dimension];
 		number_of_particles = 0;
 		temp_particles.clear();
@@ -24,13 +24,13 @@ public:
 	climb_hill_t(unsigned in_number_of_particles)
 	{
 		state_dimension = 2;
-		control_dimension = 1;
+		control_dimension = 2;
 		temp_state = new double[state_dimension];
 		number_of_particles = in_number_of_particles;
 		temp_particles.clear();
 		for (int i = 0; i < number_of_particles; ++i)
 		{
-			temp_particles.push_back(new double[state_dimension]);
+			temp_particles.push_back(new double[state_dimension+1]); //+1 to store the height
 		}
 	}
 

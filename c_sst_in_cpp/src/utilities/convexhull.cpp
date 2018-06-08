@@ -48,6 +48,6 @@ double ConvexHull::dot_product(Point_3 &p, Vector_3 &facet_normal){
         Point_3 local_point =  f->halfedge()->vertex()->point();
         volume = volume + dot_product(local_point,n)*area;
     }
-    volume = 1.0/3.0*abs(volume);
+    volume = 1.0/3.0*fabs(volume);
     return volume;
  }
