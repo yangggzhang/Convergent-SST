@@ -141,6 +141,74 @@ bool climb_hill_t::propagate_with_particles( double* start_state, std::vector<do
 
 }
 
+bool climb_hill_t::propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration )
+{
+
+	temp_state[0] = start_state[0]; temp_state[1] = start_state[1];
+	for (int i = 0; i < number_of_particles; ++i)
+	{
+		temp_particles[i][0] = particles[i][0];
+		temp_particles[i][1] = particles[i][1];
+		temp_particles[i][2] = hill_height(particles[i]);
+	}
+
+	double temp_cost = 0;
+	ConvexHull* conv;
+	double init_vol = conv->ConvexHull_Volume(temp_particles);
+	
+	double theta = control[0]; double u = control[1];
+
+	int num_steps = step_size;
+	bool validity = true;
+	for(int i=0;i<num_steps;i++)
+	{		
+		double dhdx = hill_gradient_x(temp_state);
+		double dhdy = hill_gradient_y(temp_state);
+		double delta_h = dhdx * cos(theta) + dhdy * sin(theta);
+		// std::cout << "delta_h: " << delta_h << " -2/pi*atan(delta_h) " << -2/M_PI * atan(delta_h) << std::endl;
+		// std::cout << "theta: " << theta << "cos: " << cos(theta) << "sin: " << sin(theta) << std::endl;
+		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
+		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
+		enforce_bounds();
+		
+		//Propagate all particles (No bound enforcement)
+		for (int j = 0; j < number_of_particles; ++j)
+		{
+			double temp_dhdx = hill_gradient_x(temp_particles[j]);
+			double temp_dhdy = hill_gradient_y(temp_particles[j]);
+
+			double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
+
+			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
+			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+			temp_particles[j][2] = hill_height(temp_particles[j]);
+		}
+
+		validity = validity && valid_state();
+
+		if (validity) {
+			temp_cost += conv->ConvexHull_Volume(temp_particles) * params::integration_step / init_vol;
+		}
+	}
+	result_state[0] = temp_state[0];
+	result_state[1] = temp_state[1];
+
+	// std::cout << "climb_hill_t:: propagate_with_particles: result_state: " << result_state[0] << " " << result_state[1] << std::endl;
+	// std::cout<<temp_particles.size()<<std::endl;
+	for (int i = 0; i < number_of_particles; ++i)
+	{
+		result_particles[i][0] = temp_particles[i][0];
+		result_particles[i][1] = temp_particles[i][1];
+
+		// std::cout << "climb_hill_t:: propagate_with_particles: result_particles: " << result_particles[i][0] << " " << result_particles[i][1] << std::endl;
+	}
+
+	// duration = num_steps*params::integration_step;
+	duration = temp_cost;
+	return validity;
+
+}
+
 
 void climb_hill_t::enforce_bounds()
 {

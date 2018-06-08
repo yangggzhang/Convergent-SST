@@ -48,6 +48,8 @@ public:
 
 	virtual bool propagate_with_particles( double* start_state, std::vector<double*> &particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration );
 
+	virtual bool propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration );
+
 	virtual void enforce_bounds();
 	
 	virtual bool valid_state();

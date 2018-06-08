@@ -46,6 +46,8 @@ namespace params
 	//ADD_KAIWEN
 	extern unsigned number_of_particles;
 	extern double particle_radius;
+	extern unsigned number_of_control;
+	extern unsigned fixed_time_step;
 }
 
 void read_parameters(int ac, char* av[]);

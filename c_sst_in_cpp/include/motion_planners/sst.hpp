@@ -74,6 +74,10 @@ public:
 
 	}
 
+	/**
+	 * @copydoc planner_t::planner_t(system_t* in_system, unsigned in_number_of_particles, double in_particle_radius)
+	 */
+	//ADD_KAIWEN
 	sst_t(system_t* in_system, unsigned in_number_of_particles, double in_particle_radius) : planner_t(in_system, in_number_of_particles, in_particle_radius)
 	{
 

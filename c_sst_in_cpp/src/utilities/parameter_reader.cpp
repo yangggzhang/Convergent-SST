@@ -47,6 +47,8 @@ namespace params
 	//ADD
 	unsigned number_of_particles;
 	double particle_radius;
+	unsigned number_of_control;
+	unsigned fixed_time_step;
 }
 
 #include <boost/program_options.hpp>
@@ -89,6 +91,8 @@ void read_parameters(int ac, char* av[])
 	("solution_node_diameter",po::value<double>(&params::solution_node_diameter),"Diameter of nodes along solution path in output images.")
 	("number_of_particles",po::value<unsigned>(&params::number_of_particles),"Number of particles generated.") 
 	("particle_radius",po::value<double>(&params::particle_radius),"Radius to generate particles.") 
+	("number_of_control",po::value<unsigned>(&params::number_of_control),"Number of control of b-rrt for each iteration.") 
+	("fixed_time_step",po::value<unsigned>(&params::fixed_time_step),"Fixed number of simulation steps per local planner propagation.") 
 	;
 
     po::variables_map varmap;

@@ -42,7 +42,12 @@ int main(int ac, char* av[])
 	planner_t* planner;
 	if(params::planner=="rrt")
 	{
-		planner = new rrt_t(system);
+		if (params::number_of_particles != 0 && params::number_of_control != 0)
+		{
+			planner = new rrt_t(system, params::number_of_particles, params::particle_radius,params::number_of_control);
+		}
+		else planner = new rrt_t(system);
+		
 	}
 	else if(params::planner=="sst")
 	{

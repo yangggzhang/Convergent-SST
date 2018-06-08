@@ -16,11 +16,25 @@
 #include <iostream>
 #include <deque>
 
+//EDIT
 void rrt_t::setup_planning()
 {
 	//init internal variables
 	sample_state = system->alloc_state_point();
+	temp_state_b_rrt = system->alloc_state_point();
+
+	for (int i = 0; i < number_of_particles; ++i)
+	{
+		sample_particles.push_back(system->alloc_state_point());
+		temp_particles_b_rrt.push_back(system->alloc_state_point());
+	}
+
 	sample_control = system->alloc_control_point();
+	for (int i = 0; i < number_of_control; ++i)
+	{
+		sample_control_sequence.push_back(system->alloc_control_point());
+	}
+
 	metric_query = new tree_node_t();
 	metric_query->point = system->alloc_state_point();
 
@@ -35,6 +49,11 @@ void rrt_t::setup_planning()
 	number_of_nodes++;
 	root->point = system->alloc_state_point();
 	system->copy_state_point(root->point,start_state);
+	for (int i = 0; i < number_of_particles; ++i)
+	{
+		root->particles.push_back(system->alloc_state_point());
+		system->random_particles(root->particles.back(), start_state, particle_radius);
+	}
 	//add root to nearest neighbor structure
 	add_point_to_metric(root);
 
@@ -98,7 +117,14 @@ void rrt_t::add_point_to_metric(tree_node_t* state)
 void rrt_t::random_sample()
 {
 	system->random_state(sample_state);
-	system->random_control(sample_control);
+	if (number_of_control == 0) system->random_control(sample_control);
+	else 
+	{
+		for (int i = 0; i < number_of_control; ++i)
+		{
+			system->random_control(sample_control_sequence[i]);
+		}
+	}
 }
 void rrt_t::nearest_vertex()
 {
@@ -106,9 +132,37 @@ void rrt_t::nearest_vertex()
 	double distance;
 	nearest = (tree_node_t*)metric->find_closest(metric_query,&distance)->get_state();
 }
+//EDIT
 bool rrt_t::propagate()
 {
-	return system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
+	if (number_of_particles == 0)
+	{
+		return system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
+	}
+	else
+	{
+		double best_conv_cost = 999999;		
+		for (int i = 0; i < number_of_control; ++i)
+		{
+			bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],params::fixed_time_step,temp_state_b_rrt,temp_particles_b_rrt,duration);
+			if (temp_valid && best_conv_cost > duration)
+			{
+				system->copy_state_point(sample_state, temp_state_b_rrt);
+				for (int j = 0; j < number_of_particles; ++j)
+				{
+					system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
+				}
+				best_conv_cost = duration;
+			}
+		}
+		if (best_conv_cost > 900000)
+			return false;
+		else
+		{
+			duration = best_conv_cost;
+			return true;
+		}
+	}
 }
 void rrt_t::add_to_tree()
 {
@@ -116,6 +170,13 @@ void rrt_t::add_to_tree()
 	tree_node_t* new_node = new tree_node_t();
 	new_node->point = system->alloc_state_point();
 	system->copy_state_point(new_node->point,sample_state);
+	//Pass the propagated particles to the next node
+	//ADD_KAIWEN
+	for (int i = 0; i < number_of_particles; ++i)
+	{
+		new_node->particles.push_back(system->alloc_state_point());
+		system->copy_state_point(new_node->particles.back(), sample_particles[i]);
+	}
 	//create the link to the parent node
 	new_node->parent_edge = new tree_edge_t();
 	new_node->parent_edge->control = system->alloc_control_point();

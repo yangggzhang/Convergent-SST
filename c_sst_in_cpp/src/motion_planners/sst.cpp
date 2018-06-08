@@ -89,17 +89,9 @@ void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 }
 void sst_t::step()
 {
-	// std::cout << "sst.cpp::step:number_of_particles: " << number_of_particles << std::endl;
 	random_sample();
-	// std::cout << "Finished random_sample, sst.cpp-sample_state:" << sample_state[0] << " " << sample_state[1] << std::endl;
-	// std::cout << "Finished random_sample, sst.cpp-sample_control:" << sample_control[0] << std::endl;
 	nearest_vertex();
-	// std::cout << "Finished nearest_vertex, sst.cpp-nearest->point:" << nearest->point[0] << " " << nearest->point[1] << std::endl;
-	// for (int i = 0; i < number_of_particles; ++i)
-	// {
-	// 	std::cout << "sst.cpp-nearest->particles:" << nearest->particles[i][0] << " " << nearest->particles[i][1] << std::endl;
-	// }
-	if(propagate())
+ 	if(propagate())
 	{
 		add_to_tree();
 	}
