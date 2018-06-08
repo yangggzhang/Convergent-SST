@@ -2,11 +2,12 @@
 
 Sparse methods for convergent planning
 
-all source codes are in src
-the main files are Convergent_SST.m and B_RRT.m(biased convergent planning without using sparse methods)
+All source codes are in src
+The main files are Convergent_SST.m and B_RRT.m(biased convergent planning without using sparse methods)
 
-previous simulation results are in Data folder
-evaluate_res.m can be used to visualize simulation results
+Previous simulation results are in Data folder
+Evaluate_res.m can be used to visualize simulation results
 
-the dynamical system for hill climbing simulation is described is HillClimbingSys.pdf
+The dynamical system for hill climbing simulation is described is HillClimbingSys.pdf
 
+The implementation of convergent-sst and biased-rrt in c++ can be found in c_sst_in_cpp.
