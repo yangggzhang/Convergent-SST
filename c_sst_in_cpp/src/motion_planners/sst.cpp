@@ -141,11 +141,15 @@ bool sst_t::propagate()
 {
 	if (number_of_particles == 0)
 	{
-		return system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
+		bool temp_valid = system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
+		temp_cost = duration;
+		return temp_valid;
 	}
 	else
 	{
-		return system->propagate_with_particles(nearest->point, nearest->particles, sample_control,params::min_time_steps,params::max_time_steps,sample_state,sample_particles,duration);
+		bool temp_valid = system->propagate_with_particles(nearest->point, nearest->particles, sample_control,params::min_time_steps,params::max_time_steps,sample_state,sample_particles,duration, Da);
+		temp_cost = Da;
+		return temp_valid;
 	}
 }
 
@@ -154,9 +158,9 @@ void sst_t::add_to_tree()
 	//check to see if a sample exists within the vicinity of the new node
 	check_for_witness();
 
-	if(witness_sample->rep==NULL || witness_sample->rep->cost > nearest->cost + duration)
+	if(witness_sample->rep==NULL || witness_sample->rep->cost > nearest->cost + temp_cost)
 	{
-		if(best_goal==NULL || nearest->cost + duration <= best_goal->cost)
+		if(best_goal==NULL || nearest->cost + temp_cost <= best_goal->cost)
 		{
 			//create a new tree node
 			sst_node_t* new_node = new sst_node_t();
@@ -175,10 +179,10 @@ void sst_t::add_to_tree()
 			new_node->parent_edge = new tree_edge_t();
 			new_node->parent_edge->control = system->alloc_control_point();
 			system->copy_control_point(new_node->parent_edge->control,sample_control);
-			new_node->parent_edge->duration = duration;
+			new_node->parent_edge->duration = temp_cost;
 			//set this node's parent
 			new_node->parent = nearest;
-			new_node->cost = nearest->cost + duration;
+			new_node->cost = nearest->cost + temp_cost;
 			//set parent's child
 			nearest->children.insert(nearest->children.begin(),new_node);
 			number_of_nodes++;

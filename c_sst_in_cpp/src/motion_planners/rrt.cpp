@@ -12,6 +12,7 @@
 
 #include "motion_planners/rrt.hpp"
 #include "nearest_neighbors/graph_nearest_neighbors.hpp"
+#include "utilities/random.hpp"
 
 #include <iostream>
 #include <deque>
@@ -137,29 +138,33 @@ bool rrt_t::propagate()
 {
 	if (number_of_particles == 0)
 	{
-		return system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
+		bool temp_valid = system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
+		temp_cost = duration;
+		return temp_valid;
 	}
 	else
 	{
-		double best_conv_cost = 999999;		
+		double best_conv_cost = 999999;	
+		int temp_step_size = uniform_int_random(params::min_time_steps,params::max_time_steps);	
 		for (int i = 0; i < number_of_control; ++i)
 		{
-			bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],params::fixed_time_step,temp_state_b_rrt,temp_particles_b_rrt,duration);
-			if (temp_valid && best_conv_cost > duration)
+			bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],temp_step_size,temp_state_b_rrt,temp_particles_b_rrt,duration,Da);
+			temp_cost = Da;
+			if (temp_valid && best_conv_cost > temp_cost)
 			{
 				system->copy_state_point(sample_state, temp_state_b_rrt);
 				for (int j = 0; j < number_of_particles; ++j)
 				{
 					system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
 				}
-				best_conv_cost = duration;
+				best_conv_cost = temp_cost;
 			}
 		}
 		if (best_conv_cost > 900000)
 			return false;
 		else
 		{
-			duration = best_conv_cost;
+			temp_cost = best_conv_cost;
 			return true;
 		}
 	}
@@ -181,10 +186,10 @@ void rrt_t::add_to_tree()
 	new_node->parent_edge = new tree_edge_t();
 	new_node->parent_edge->control = system->alloc_control_point();
 	system->copy_control_point(new_node->parent_edge->control,sample_control);
-	new_node->parent_edge->duration = duration;
+	new_node->parent_edge->duration = temp_cost;
 	//set this node's parent
 	new_node->parent = nearest;
-	new_node->cost = nearest->cost + duration;
+	new_node->cost = nearest->cost + temp_cost;
 	//set parent's child
 	nearest->children.insert(nearest->children.begin(),new_node);
 	add_point_to_metric(new_node);

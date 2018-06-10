@@ -150,7 +150,7 @@ public:
 	 * @return True if this propagation was valid, false if not.
 	 */
     //ADD_KAIWEN
-	virtual bool propagate_with_particles( double* start_state, std::vector<double*> &particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration ) = 0;
+	virtual bool propagate_with_particles( double* start_state, std::vector<double*> &particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da ) = 0;
 
 	/**
 	 * @brief Performs a local propagation with particles using simple numerical integration.
@@ -166,7 +166,7 @@ public:
 	 * @return True if this propagation was valid, false if not.
 	 */
     //ADD_KAIWEN
-	virtual bool propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration ) = 0;
+	virtual bool propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da ) = 0;
     /**
      * @brief Creates a point in image space corresponding to a given state.
      * @details Creates a point in image space corresponding to a given state.

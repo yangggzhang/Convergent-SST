@@ -73,7 +73,7 @@ bool climb_hill_t::propagate( double* start_state, double* control, int min_step
 	return validity;
 }
 
-bool climb_hill_t::propagate_with_particles( double* start_state, std::vector<double*> &particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration )
+bool climb_hill_t::propagate_with_particles( double* start_state, std::vector<double*> &particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da )
 {
 
 	temp_state[0] = start_state[0]; temp_state[1] = start_state[1];
@@ -135,13 +135,13 @@ bool climb_hill_t::propagate_with_particles( double* start_state, std::vector<do
 		// std::cout << "climb_hill_t:: propagate_with_particles: result_particles: " << result_particles[i][0] << " " << result_particles[i][1] << std::endl;
 	}
 
-	// duration = num_steps*params::integration_step;
-	duration = temp_cost;
+	duration = num_steps*params::integration_step;
+	Da = temp_cost;
 	return validity;
 
 }
 
-bool climb_hill_t::propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration )
+bool climb_hill_t::propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da)
 {
 
 	temp_state[0] = start_state[0]; temp_state[1] = start_state[1];
@@ -203,8 +203,8 @@ bool climb_hill_t::propagate_fixed_duration( double* start_state, std::vector<do
 		// std::cout << "climb_hill_t:: propagate_with_particles: result_particles: " << result_particles[i][0] << " " << result_particles[i][1] << std::endl;
 	}
 
-	// duration = num_steps*params::integration_step;
-	duration = temp_cost;
+	duration = num_steps*params::integration_step;
+	Da = temp_cost;
 	return validity;
 
 }

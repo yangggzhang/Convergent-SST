@@ -31,7 +31,7 @@ int main(int ac, char* av[])
 {
 	read_parameters(ac,av);
 	//****************After reading in from input, we need to instantiate classes
-	init_random(params::random_seed);
+	init_random(time(NULL));
 	system_t* system;
 	if(params::system=="climb_hill")
 	{

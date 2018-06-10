@@ -123,6 +123,18 @@ protected:
 	double duration;
 
 	/**
+	 * @brief A resulting Da of a propagation step.
+	 */
+	//ADD_KAIWEN
+	double Da;
+
+	/**
+	 * @brief A resulting cost of a propagation step.
+	 */
+	//ADD_KAIWEN
+	double temp_cost;
+
+	/**
 	 * @brief Storage used to query the nearest neighbor structure.
 	 */
 	tree_node_t* metric_query;
