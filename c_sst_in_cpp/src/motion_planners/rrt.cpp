@@ -146,18 +146,19 @@ bool rrt_t::propagate()
 	{
 		double best_conv_cost = 999999;	
 		int temp_step_size = uniform_int_random(params::min_time_steps,params::max_time_steps);	
+		double cost_for_comp = 0;
 		for (int i = 0; i < number_of_control; ++i)
 		{
 			bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],temp_step_size,temp_state_b_rrt,temp_particles_b_rrt,duration,Da);
-			temp_cost = Da;
-			if (temp_valid && best_conv_cost > temp_cost)
+			cost_for_comp = Da;
+			if (temp_valid && best_conv_cost > cost_for_comp)
 			{
 				system->copy_state_point(sample_state, temp_state_b_rrt);
 				for (int j = 0; j < number_of_particles; ++j)
 				{
 					system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
 				}
-				best_conv_cost = temp_cost;
+				best_conv_cost = cost_for_comp;
 			}
 		}
 		if (best_conv_cost > 900000)
