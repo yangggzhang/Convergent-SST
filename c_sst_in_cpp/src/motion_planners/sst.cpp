@@ -24,7 +24,7 @@ void sst_t::setup_planning()
 	best_goal = NULL;
 	//init internal variables
 	sample_state = system->alloc_state_point();
-
+	cost = 0;	
 	for (int i = 0; i < number_of_particles; ++i)
 	{
 		sample_particles.push_back(system->alloc_state_point());
@@ -43,6 +43,7 @@ void sst_t::setup_planning()
 	//create the root of the tree
 	root = new sst_node_t();
 	root->point = system->alloc_state_point();
+	// root->cost = 1;
 	system->copy_state_point(root->point,start_state);
 	for (int i = 0; i < number_of_particles; ++i)
 	{
@@ -84,7 +85,8 @@ void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 		controls.push_back(std::pair<double*,double>(NULL,0));
 		controls.back().first = system->alloc_control_point();
 		system->copy_control_point(controls.back().first,path[i]->parent_edge->control);
-		controls.back().second = path[i]->parent_edge->duration;
+		controls.back().second = path[i]->parent_edge->cost;
+		//controls.back().second = path[i]->cost;
 	}
 }
 void sst_t::step()
@@ -139,18 +141,7 @@ void sst_t::nearest_vertex()
 //EDIT
 bool sst_t::propagate()
 {
-	if (number_of_particles == 0)
-	{
-		bool temp_valid = system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
-		temp_cost = duration;
-		return temp_valid;
-	}
-	else
-	{
-		bool temp_valid = system->propagate_with_particles(nearest->point, nearest->particles, sample_control,params::min_time_steps,params::max_time_steps,sample_state,sample_particles,duration, Da);
-		temp_cost = Da;
-		return temp_valid;
-	}
+	return system->convergent_propagate(params::random_time, nearest->point, nearest->particles, sample_control, params::min_time_steps,params::max_time_steps, sample_state, sample_particles, duration, cost);
 }
 
 void sst_t::add_to_tree()
@@ -158,9 +149,9 @@ void sst_t::add_to_tree()
 	//check to see if a sample exists within the vicinity of the new node
 	check_for_witness();
 
-	if(witness_sample->rep==NULL || witness_sample->rep->cost > nearest->cost + temp_cost)
+	if(witness_sample->rep==NULL || witness_sample->rep->cost > (nearest->cost + cost) )
 	{
-		if(best_goal==NULL || nearest->cost + temp_cost <= best_goal->cost)
+		if(best_goal==NULL || (nearest->cost + cost) <= best_goal->cost)
 		{
 			//create a new tree node
 			sst_node_t* new_node = new sst_node_t();
@@ -179,10 +170,11 @@ void sst_t::add_to_tree()
 			new_node->parent_edge = new tree_edge_t();
 			new_node->parent_edge->control = system->alloc_control_point();
 			system->copy_control_point(new_node->parent_edge->control,sample_control);
-			new_node->parent_edge->duration = temp_cost;
+			new_node->parent_edge->duration = duration;
+			new_node->parent_edge->cost = cost;
 			//set this node's parent
 			new_node->parent = nearest;
-			new_node->cost = nearest->cost + temp_cost;
+			new_node->cost = nearest->cost + cost;
 			//set parent's child
 			nearest->children.insert(nearest->children.begin(),new_node);
 			number_of_nodes++;

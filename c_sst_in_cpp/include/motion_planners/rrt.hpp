@@ -104,16 +104,16 @@ protected:
 	double duration;
 
 	/**
-	 * @brief A resulting Da of a propagation step.
+	 * Yang
+	 * @brief A cost of a propagation step.
+	 */
+	double cost;
+
+	/**
+	 * @brief Average divergence measure.
 	 */
 	//ADD_KAIWEN
 	double Da;
-
-	/**
-	 * @brief A resulting cost of a propagation step.
-	 */
-	//ADD_KAIWEN
-	double temp_cost;
 
 	/**
 	 * @brief Storage used to query the nearest neighbor structure.

@@ -149,8 +149,8 @@ public:
 	 * @param duration The amount of simulation time used.
 	 * @return True if this propagation was valid, false if not.
 	 */
-    //ADD_KAIWEN
-	virtual bool propagate_with_particles( double* start_state, std::vector<double*> &particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da ) = 0;
+    //ADD_Yang
+	virtual bool convergent_propagate( const bool &random_time, double* start_state,std::vector<double*> &start_particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost ) = 0;
 
 	/**
 	 * @brief Performs a local propagation with particles using simple numerical integration.
@@ -165,9 +165,8 @@ public:
 	 * @param duration The amount of simulation time used.
 	 * @return True if this propagation was valid, false if not.
 	 */
-    //ADD_KAIWEN
-	virtual bool propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da ) = 0;
-    /**
+    
+	 /**
      * @brief Creates a point in image space corresponding to a given state.
      * @details Creates a point in image space corresponding to a given state.
      * 
@@ -231,7 +230,7 @@ protected:
 	 */
 	//ADD
 	unsigned number_of_particles;
-
+	
 };
 
 #endif

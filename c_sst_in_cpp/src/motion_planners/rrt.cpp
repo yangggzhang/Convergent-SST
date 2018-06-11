@@ -12,10 +12,10 @@
 
 #include "motion_planners/rrt.hpp"
 #include "nearest_neighbors/graph_nearest_neighbors.hpp"
-#include "utilities/random.hpp"
 
 #include <iostream>
 #include <deque>
+#include <limits>
 
 //EDIT
 void rrt_t::setup_planning()
@@ -23,6 +23,8 @@ void rrt_t::setup_planning()
 	//init internal variables
 	sample_state = system->alloc_state_point();
 	temp_state_b_rrt = system->alloc_state_point();
+
+	cost = 1;
 
 	for (int i = 0; i < number_of_particles; ++i)
 	{
@@ -93,7 +95,7 @@ void rrt_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 			controls.push_back(std::pair<double*,double>(NULL,0));
 			controls.back().first = system->alloc_control_point();
 			system->copy_control_point(controls.back().first,path[i]->parent_edge->control);
-			controls.back().second = path[i]->parent_edge->duration;
+			controls.back().second = path[i]->parent_edge->cost;
 		}
 	}
 }
@@ -136,38 +138,31 @@ void rrt_t::nearest_vertex()
 //EDIT
 bool rrt_t::propagate()
 {
-	if (number_of_particles == 0)
+	//std::cout<<"propagate"<<std::endl;
+	double best_cost = std::numeric_limits<double>::infinity();
+	bool valid = false;
+	double temp_duration = std::numeric_limits<double>::infinity();
+	double temp_cost = std::numeric_limits<double>::infinity();
+	for (int i = 0; i < number_of_control; ++i)
 	{
-		bool temp_valid = system->propagate(nearest->point,sample_control,params::min_time_steps,params::max_time_steps,sample_state,duration);
-		temp_cost = duration;
-		return temp_valid;
-	}
-	else
-	{
-		double best_conv_cost = 999999;	
-		int temp_step_size = uniform_int_random(params::min_time_steps,params::max_time_steps);	
-		for (int i = 0; i < number_of_control; ++i)
+		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, temp_state_b_rrt,temp_particles_b_rrt, temp_duration, temp_cost );
+		//std::cout<<"Valid : "<<temp_valid<< " "<<"Cost : "<<temp_cost<<std::endl;
+		//bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],params::fixed_time_step,temp_state_b_rrt,temp_particles_b_rrt,duration,Da);
+		if (temp_valid && temp_cost < best_cost)
 		{
-			bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],temp_step_size,temp_state_b_rrt,temp_particles_b_rrt,duration,Da);
-			temp_cost = Da;
-			if (temp_valid && best_conv_cost > temp_cost)
+			valid = true;
+			system->copy_state_point(sample_state, temp_state_b_rrt);
+			for (int j = 0; j < number_of_particles; ++j)
 			{
-				system->copy_state_point(sample_state, temp_state_b_rrt);
-				for (int j = 0; j < number_of_particles; ++j)
-				{
-					system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
-				}
-				best_conv_cost = temp_cost;
+				system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
 			}
-		}
-		if (best_conv_cost > 900000)
-			return false;
-		else
-		{
-			temp_cost = best_conv_cost;
-			return true;
+			best_cost = temp_cost;
+			duration = temp_duration;
 		}
 	}
+	cost = best_cost;
+	return valid;
+	
 }
 void rrt_t::add_to_tree()
 {
@@ -186,10 +181,11 @@ void rrt_t::add_to_tree()
 	new_node->parent_edge = new tree_edge_t();
 	new_node->parent_edge->control = system->alloc_control_point();
 	system->copy_control_point(new_node->parent_edge->control,sample_control);
-	new_node->parent_edge->duration = temp_cost;
+	new_node->parent_edge->duration = duration;
+	new_node->parent_edge->cost = cost;
 	//set this node's parent
 	new_node->parent = nearest;
-	new_node->cost = nearest->cost + temp_cost;
+	new_node->cost = nearest->cost + cost;
 	//set parent's child
 	nearest->children.insert(nearest->children.begin(),new_node);
 	add_point_to_metric(new_node);

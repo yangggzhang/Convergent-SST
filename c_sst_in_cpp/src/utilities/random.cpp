@@ -13,6 +13,7 @@
 #include "utilities/random.hpp"
 
 #include <stdlib.h>
+#include <time.h>       /* time */
 
 void init_random(int seed)
 {

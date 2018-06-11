@@ -49,6 +49,8 @@ namespace params
 	double particle_radius;
 	unsigned number_of_control;
 	unsigned fixed_time_step;
+	double b;
+	bool random_time;
 }
 
 #include <boost/program_options.hpp>
@@ -93,6 +95,8 @@ void read_parameters(int ac, char* av[])
 	("particle_radius",po::value<double>(&params::particle_radius),"Radius to generate particles.") 
 	("number_of_control",po::value<unsigned>(&params::number_of_control),"Number of control of b-rrt for each iteration.") 
 	("fixed_time_step",po::value<unsigned>(&params::fixed_time_step),"Fixed number of simulation steps per local planner propagation.") 
+	("b",po::value<double>(&params::b),"Biased constant used in the cost function.") 
+	("random_time",po::value<bool>(&params::random_time),"Random time option for propogation.") 
 	;
 
     po::variables_map varmap;

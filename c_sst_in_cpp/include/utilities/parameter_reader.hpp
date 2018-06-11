@@ -48,6 +48,8 @@ namespace params
 	extern double particle_radius;
 	extern unsigned number_of_control;
 	extern unsigned fixed_time_step;
+	extern double b;
+	extern bool random_time;
 }
 
 void read_parameters(int ac, char* av[]);

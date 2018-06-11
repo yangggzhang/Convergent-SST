@@ -34,6 +34,12 @@ public:
      * @brief The duration to execute control.
      */
 	double duration;
+
+    /**
+	 * Yang
+	 * @brief The cost to execute control.
+	 */
+	double cost;
 };
 
 /**
