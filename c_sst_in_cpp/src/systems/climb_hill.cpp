@@ -110,6 +110,7 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 	
 	if ( start_particles.size() > 0 ) 
 	{
+		cost = 0;
 		// iterate through particles for convergent planning
 		for (size_t i = 0; i < start_particles.size(); i++)
 		{
@@ -134,7 +135,9 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 				temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 				temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
 				temp_particles[j][2] = hill_height(temp_particles[j]);
+				
 			}
+			cost += conv->ConvexHull_Volume(temp_particles) * params::integration_step/init_vol;
 		}
 
 		double end_vol = conv->ConvexHull_Volume(temp_particles);
@@ -148,7 +151,7 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 		double Da = (double)1.0/duration * log(end_vol/init_vol);
 		//cost = duration*exp(params::b*Da);
-		cost = params::b*Da;
+		// cost = params::b*Da;
 	}
 
 	return validity;
