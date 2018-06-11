@@ -84,8 +84,8 @@ int main(int ac, char* av[])
 			solution_cost+=controls[i].second;
 		}
 		std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
-		planner->visualize_tree(0);
-		planner->visualize_nodes(0);
+		planner->visualize_tree(params::trial);
+		planner->visualize_nodes(params::trial);
 	}
 	else
 	{

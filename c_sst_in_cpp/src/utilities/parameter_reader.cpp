@@ -51,6 +51,7 @@ namespace params
 	unsigned fixed_time_step;
 	double b;
 	bool random_time;
+	int trial;
 }
 
 #include <boost/program_options.hpp>
@@ -97,6 +98,7 @@ void read_parameters(int ac, char* av[])
 	("fixed_time_step",po::value<unsigned>(&params::fixed_time_step),"Fixed number of simulation steps per local planner propagation.") 
 	("b",po::value<double>(&params::b),"Biased constant used in the cost function.") 
 	("random_time",po::value<bool>(&params::random_time),"Random time option for propogation.") 
+	("trial",po::value<int>(&params::trial),"Random time option for propogation.") 
 	;
 
     po::variables_map varmap;

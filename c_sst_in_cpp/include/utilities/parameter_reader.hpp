@@ -50,6 +50,7 @@ namespace params
 	extern unsigned fixed_time_step;
 	extern double b;
 	extern bool random_time;
+	extern int trial;
 }
 
 void read_parameters(int ac, char* av[]);
