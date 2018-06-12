@@ -70,6 +70,12 @@ protected:
 	std::vector<double*> sample_particles;
 
 	/**
+	 * @brief The best state in propagation.
+	 */
+	//ADD_KAIWEN
+	double* best_prop_state;
+
+	/**
 	 * @brief A randomly sampled control.
 	 */
 	double* sample_control;
