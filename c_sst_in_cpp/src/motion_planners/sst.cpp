@@ -24,10 +24,12 @@ void sst_t::setup_planning()
 	best_goal = NULL;
 	//init internal variables
 	sample_state = system->alloc_state_point();
+	control_temp_state = system->alloc_state_point();
 	cost = 0;	
 	for (int i = 0; i < number_of_particles; ++i)
 	{
 		sample_particles.push_back(system->alloc_state_point());
+		control_temp_particles.push_back(system->alloc_state_point());
 	}
 
 	sample_control = system->alloc_control_point();
@@ -49,6 +51,11 @@ void sst_t::setup_planning()
 	{
 		root->particles.push_back(system->alloc_state_point());
 		system->random_particles(root->particles.back(), start_state, particle_radius);
+	}
+
+	for (int i = 0; i < number_of_control; ++i)
+	{
+		sample_control_sequence.push_back(system->alloc_control_point());
 	}
 
 	add_point_to_metric(root);
@@ -117,8 +124,16 @@ void sst_t::add_point_to_samples(tree_node_t* state)
 void sst_t::random_sample()
 {
 	system->random_state(sample_state);
-	system->random_control(sample_control);
+	if (number_of_control == 0) system->random_control(sample_control);
+	else 
+	{
+		for (int i = 0; i < number_of_control; ++i)
+		{
+			system->random_control(sample_control_sequence[i]);
+		}
+	}
 }
+
 void sst_t::nearest_vertex()
 {
 	//performs the best near query
@@ -141,7 +156,37 @@ void sst_t::nearest_vertex()
 //EDIT
 bool sst_t::propagate()
 {
-	return system->convergent_propagate(params::random_time, nearest->point, nearest->particles, sample_control, params::min_time_steps,params::max_time_steps, sample_state, sample_particles, duration, cost);
+	//return system->convergent_propagate(params::random_time, nearest->point, nearest->particles, sample_control, params::min_time_steps,params::max_time_steps, sample_state, sample_particles, duration, cost);
+	double best_cost = std::numeric_limits<double>::infinity();
+	bool local_valid = false;
+	double temp_duration = std::numeric_limits<double>::infinity();
+	double best_biased_cost = std::numeric_limits<double>::infinity();
+	double temp_cost;
+	
+	for (int i = 0; i < number_of_control; ++i)
+	{
+		temp_cost = best_cost;
+		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
+		double local_distance = system->distance(sample_state,control_temp_state);
+		double local_biased_cost = local_distance * exp(temp_cost);
+		// double local_biased_cost = temp_cost;
+		if (temp_valid && local_biased_cost < best_biased_cost)
+		{
+			local_valid = true;
+			system->copy_state_point(sample_state, control_temp_state);
+			for (int j = 0; j < number_of_particles; ++j)
+			{
+				system->copy_state_point(sample_particles[j],control_temp_particles[j]);
+			}
+			best_cost = temp_cost;
+			best_biased_cost = local_biased_cost;
+			duration = temp_duration;
+		}
+	}
+
+	cost = best_cost;
+	
+	return local_valid;
 }
 
 void sst_t::add_to_tree()
@@ -182,12 +227,12 @@ void sst_t::add_to_tree()
 	        if(best_goal==NULL && system->distance(new_node->point,goal_state)<goal_radius)
 	        {
 	        	best_goal = new_node;
-	        	branch_and_bound((sst_node_t*)root);
+	        	//branch_and_bound((sst_node_t*)root);
 	        }
 	        else if(best_goal!=NULL && best_goal->cost > new_node->cost && system->distance(new_node->point,goal_state)<goal_radius)
 	        {
 	        	best_goal = new_node;
-	        	branch_and_bound((sst_node_t*)root);
+	        	//branch_and_bound((sst_node_t*)root);
 	        }
 
 

@@ -90,13 +90,13 @@ protected:
 	 * @brief A temporary state to store locally best state for each iteration (used in b-rrt).
 	 */
 	//ADD_KAIWEN
-	double* temp_state_b_rrt;
+	double* control_temp_state;
 
 	/**
 	 * @brief Temporary particles to store locally best state for each iteration (used in b-rrt).
 	 */
 	//ADD_KAIWEN
-	std::vector<double*> temp_particles_b_rrt;	
+	std::vector<double*> control_temp_particles;	
 
 	/**
 	 * @brief A resulting duration of a propagation step.

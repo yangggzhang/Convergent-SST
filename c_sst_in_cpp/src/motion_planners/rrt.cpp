@@ -16,20 +16,21 @@
 #include <iostream>
 #include <deque>
 #include <limits>
+#include <math.h>
 
 //EDIT
 void rrt_t::setup_planning()
 {
 	//init internal variables
 	sample_state = system->alloc_state_point();
-	temp_state_b_rrt = system->alloc_state_point();
+	control_temp_state = system->alloc_state_point();
 
-	cost = 1;
+	cost = 0;
 
 	for (int i = 0; i < number_of_particles; ++i)
 	{
 		sample_particles.push_back(system->alloc_state_point());
-		temp_particles_b_rrt.push_back(system->alloc_state_point());
+		control_temp_particles.push_back(system->alloc_state_point());
 	}
 
 	sample_control = system->alloc_control_point();
@@ -138,30 +139,36 @@ void rrt_t::nearest_vertex()
 //EDIT
 bool rrt_t::propagate()
 {
-	//std::cout<<"propagate"<<std::endl;
 	double best_cost = std::numeric_limits<double>::infinity();
-	bool valid = false;
+	bool local_valid = false;
 	double temp_duration = std::numeric_limits<double>::infinity();
-	double temp_cost = std::numeric_limits<double>::infinity();
+	double best_biased_cost = std::numeric_limits<double>::infinity();
+	double temp_cost;
+	
 	for (int i = 0; i < number_of_control; ++i)
 	{
-		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, temp_state_b_rrt,temp_particles_b_rrt, temp_duration, temp_cost );
-		//std::cout<<"Valid : "<<temp_valid<< " "<<"Cost : "<<temp_cost<<std::endl;
-		//bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],params::fixed_time_step,temp_state_b_rrt,temp_particles_b_rrt,duration,Da);
-		if (temp_valid && temp_cost < best_cost)
+		temp_cost = best_cost;
+		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
+		double local_distance = system->distance(sample_state,control_temp_state);
+		double local_biased_cost = local_distance * exp(temp_cost);
+		//double local_biased_cost = temp_cost;
+		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
-			valid = true;
-			system->copy_state_point(sample_state, temp_state_b_rrt);
+			local_valid = true;
+			system->copy_state_point(sample_state, control_temp_state);
 			for (int j = 0; j < number_of_particles; ++j)
 			{
-				system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
+				system->copy_state_point(sample_particles[j],control_temp_particles[j]);
 			}
 			best_cost = temp_cost;
+			best_biased_cost = local_biased_cost;
 			duration = temp_duration;
 		}
 	}
+
 	cost = best_cost;
-	return valid;
+	
+	return local_valid;
 	
 }
 void rrt_t::add_to_tree()

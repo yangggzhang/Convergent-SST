@@ -1,4 +1,5 @@
 #include "utilities/convexhull.hpp"
+#include <sstream>
 
 double ConvexHull::facet_area(Facet_iterator &f)
 {
@@ -49,5 +50,9 @@ double ConvexHull::dot_product(Point_3 &p, Vector_3 &facet_normal){
         volume = volume + dot_product(local_point,n)*area;
     }
     volume = 1.0/3.0*fabs(volume);
-    return volume;
+    std::stringstream ss;
+    ss << volume;
+    double output_volume;
+    ss >> output_volume;
+    return output_volume;
  }
