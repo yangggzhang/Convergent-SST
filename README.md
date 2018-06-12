@@ -15,7 +15,14 @@ The implementation of convergent-sst and biased-rrt in c++ can be found in c_sst
 The code is modified based on Pracsys lab at Rutgers' sparse rrt code. The source code of sparse rrt can be found in https://bitbucket.org/pracsys/sparse_rrt.
 
 ## COMPILING
-To compile the convergent sst in C++, follow these steps in the git directory:
+To compile the convergent sst in C++, the computational geometry algorithm library (CGAL) is needed to compute the volume of convex hull. To install the CGAL, follow these steps in the command line:
+
+```
+sudo apt-get install libcgal-dev # install the CGAL library
+sudo apt-get install libcgal-demo # install the CGAL demos
+```
+
+After the installation of CGAL, follow these steps in the c_sst_in_cpp directory:
 
 ```
 cd c_sst_in_cpp
