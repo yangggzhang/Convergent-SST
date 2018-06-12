@@ -23,14 +23,9 @@ void rrt_t::setup_planning()
 {
 	//init internal variables
 	sample_state = system->alloc_state_point();
-<<<<<<< HEAD
 	control_temp_state = system->alloc_state_point();
 
 	cost = 0;
-=======
-	temp_state_b_rrt = system->alloc_state_point();
-	best_prop_state = system->alloc_state_point();
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 
 	for (int i = 0; i < number_of_particles; ++i)
 	{
@@ -152,7 +147,6 @@ bool rrt_t::propagate()
 	
 	for (int i = 0; i < number_of_control; ++i)
 	{
-<<<<<<< HEAD
 		temp_cost = best_cost;
 		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
 		double local_distance = system->distance(sample_state,control_temp_state);
@@ -169,63 +163,6 @@ bool rrt_t::propagate()
 			best_cost = temp_cost;
 			best_biased_cost = local_biased_cost;
 			duration = temp_duration;
-=======
-		double best_cost = 999999;
-		int temp_step_size = uniform_int_random(params::min_time_steps,params::max_time_steps);	
-		int flag_conv_or_near = uniform_int_random(0,1);
-		flag_conv_or_near = 1;
-		double cost_for_comp = 0;
-
-		if(flag_conv_or_near == 0) //Return the most convergent propagated states
-		{
-			for (int i = 0; i < number_of_control; ++i)
-			{
-				bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],temp_step_size,temp_state_b_rrt,temp_particles_b_rrt,duration,Da);
-				cost_for_comp = Da;
-				if (temp_valid && best_cost > cost_for_comp)
-				{
-					system->copy_state_point(best_prop_state, temp_state_b_rrt);
-					for (int j = 0; j < number_of_particles; ++j)
-					{
-						system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
-					}
-					best_cost = cost_for_comp;
-				}
-			}
-			if (best_cost > 900000)
-				return false;
-			else
-			{
-				system->copy_state_point(sample_state, best_prop_state);
-				temp_cost = best_cost;
-				return true;
-			}
-		}
-		else //Return the state that is closest to the sample state
-		{
-			for (int i = 0; i < number_of_control; ++i)
-			{
-				bool temp_valid = system->propagate_fixed_duration(nearest->point, nearest->particles, sample_control_sequence[i],temp_step_size,temp_state_b_rrt,temp_particles_b_rrt,duration,Da);
-				cost_for_comp = system->distance(temp_state_b_rrt, sample_state);
-				if (temp_valid && best_cost > cost_for_comp)
-				{
-					system->copy_state_point(best_prop_state, temp_state_b_rrt);
-					for (int j = 0; j < number_of_particles; ++j)
-					{
-						system->copy_state_point(sample_particles[j],temp_particles_b_rrt[j]);
-					}
-					best_cost = cost_for_comp;
-					temp_cost = Da;
-				}
-			}
-			if (best_cost > 900000)
-				return false;
-			else
-			{
-				system->copy_state_point(sample_state, best_prop_state);
-				return true;
-			}
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 		}
 	}
 

@@ -16,17 +16,11 @@
 #include <math.h>
 #include <sstream>
 
-<<<<<<< HEAD
 #define MIN_X -3
 #define MAX_X 3
 #define MIN_Y -3
 #define MAX_Y 3
-=======
-#define MIN_X -4
-#define MAX_X 4
-#define MIN_Y -4
-#define MAX_Y 4
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
+
 
 #define MIN_SPEED 0.5
 #define MAX_SPEED 0.5
@@ -91,19 +85,6 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 {	
 	double local_cost = 0;
 	temp_state[0] = start_state[0]; temp_state[1] = start_state[1];
-
-<<<<<<< HEAD
-=======
-	double temp_cost = 0;
-	ConvexHull* conv;
-	// std::cout << "pass here" << std::endl;
-	// std::cout << conv->ConvexHull_Volume(temp_particles) << std::endl;
-	// double init_vol = std::max(conv->ConvexHull_Volume(temp_particles), 0.00001);
-	double init_vol = (double)conv->ConvexHull_Volume(temp_particles);
-	// double init_vol = 1;
-	
-	// std::cout << "pass" << std::endl;
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 	double theta = control[0]; double u = control[1];
 
 	int num_steps = 0; // adjust time stamp according to input
@@ -124,15 +105,6 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
 		enforce_bounds();
 		validity = validity && valid_state();
-<<<<<<< HEAD
-=======
-
-		if (validity) {
-			// temp_cost += std::max(conv->ConvexHull_Volume(temp_particles), 0.00001) * params::integration_step / init_vol;
-			temp_cost += (double) conv->ConvexHull_Volume(temp_particles) * params::integration_step / init_vol;
-			// temp_cost = std::min(temp_cost, 1000000.);
-		}
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 	}
 	// std::cout << "pass there" << std::endl;
 	result_state[0] = temp_state[0];
@@ -140,22 +112,6 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 	duration = num_steps*params::integration_step;
 	local_cost = duration; //default setting
-
-
-<<<<<<< HEAD
-=======
-	temp_state[0] = start_state[0]; temp_state[1] = start_state[1];
-	for (int i = 0; i < number_of_particles; ++i)
-	{
-		temp_particles[i][0] = particles[i][0];
-		temp_particles[i][1] = particles[i][1];
-		temp_particles[i][2] = hill_height(particles[i]);
-	}
-
-	double temp_cost = 0;
-	ConvexHull* conv;
-	double init_vol = (double) conv->ConvexHull_Volume(temp_particles);
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 	
 	if ( start_particles.size() > 0 ) 
 	{
@@ -168,7 +124,6 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 			temp_particles[i][2] = hill_height(start_particles[i]);
 		}
 
-<<<<<<< HEAD
 		ConvexHull* conv;
 		double init_vol = 0;
 		init_vol = (double) conv->ConvexHull_Volume(temp_particles);
@@ -188,27 +143,6 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 			}
 			//local_cost += (double)conv->ConvexHull_Volume(temp_particles) * params::integration_step;
 		}
-=======
-		validity = validity && valid_state();
-
-		// if (validity) {
-		// 	// std::cout << conv->ConvexHull_Volume(temp_particles)<<std::endl;
-		// 	temp_cost += (double) conv->ConvexHull_Volume(temp_particles) * params::integration_step / init_vol;
-
-		// }
-	}
-	result_state[0] = temp_state[0];
-	result_state[1] = temp_state[1];
-
-	double end_vol = (double) conv->ConvexHull_Volume(temp_particles);
-
-	// std::cout << "climb_hill_t:: propagate_with_particles: result_state: " << result_state[0] << " " << result_state[1] << std::endl;
-	// std::cout<<temp_particles.size()<<std::endl;
-	for (int i = 0; i < number_of_particles; ++i)
-	{
-		result_particles[i][0] = temp_particles[i][0];
-		result_particles[i][1] = temp_particles[i][1];
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 
 		double end_vol = (double)conv->ConvexHull_Volume(temp_particles);
 		
@@ -224,14 +158,8 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 		}
 	}
 
-<<<<<<< HEAD
 	cost = local_cost;
-	
-//	std::cout<<cost<<std::endl;
-=======
-	duration = num_steps*params::integration_step;
-	Da = 1.0/2.0 * (init_vol + end_vol) * params::integration_step * num_steps / init_vol;
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
+
 	return validity;
 }
 
@@ -258,7 +186,7 @@ bool climb_hill_t::valid_state()
 }
 
 double climb_hill_t::hill_height(double* point) {
-<<<<<<< HEAD
+
 	//return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
 	double height;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
@@ -269,19 +197,11 @@ double climb_hill_t::hill_height(double* point) {
 
 	//return 18.0 - point[0] * point[0] - point[1] * point[1];
 	//return 3*point[1] + sin(point[0] + point[0]*point[1]);
-=======
-	// return 3*point[1] + sin(point[0] + point[0]*point[1]);
-	double height;
-	double dist = std::sqrt(point[0]*point[0] + point[1]*point[1]);
-	if (dist <= 2) height = 1 - dist*dist/4.0;
-	else height = 0;
-	return height;
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
+
 }
 
 double climb_hill_t::hill_gradient_x(double* point) {
 	// return cos(point[0] + point[0]*point[1])*(1+point[1]);
-<<<<<<< HEAD
 	//return cos(point[0] + point[0]*point[1])*(1+point[1]);
 	double dx;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
@@ -289,18 +209,10 @@ double climb_hill_t::hill_gradient_x(double* point) {
 	else dx  = 0.0;
 	return dx;
 	//return -2.0 * point[0];
-=======
-	double dx;
-	double dist = std::sqrt(point[0]*point[0] + point[1]*point[1]);
-	if (dist <= 2) dx = - point[0]/2.0;
-	else dx = 0;
-	return dx;
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
 	// return 3 + cos(point[0]+point[0]*point[1])*point[0];
-<<<<<<< HEAD
 	//return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
 	double dy;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
@@ -308,13 +220,6 @@ double climb_hill_t::hill_gradient_y(double* point) {
 	else dy  = 0.0;
 	return dy;
 	//return -2.0 * point[1];
-=======
-	double dy;
-	double dist = std::sqrt(point[0]*point[0] + point[1]*point[1]);
-	if (dist < 2) dy = - point[1]/2.0;
-	else dy = 0;
-	return dy;
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
 }
 
 svg::Point climb_hill_t::visualize_point(double* state, svg::Dimensions dims)

@@ -50,17 +50,10 @@ double ConvexHull::dot_product(Point_3 &p, Vector_3 &facet_normal){
         volume = volume + dot_product(local_point,n)*area;
     }
     volume = 1.0/3.0*fabs(volume);
-<<<<<<< HEAD
+    
     std::stringstream ss;
     ss << volume;
     double output_volume;
     ss >> output_volume;
     return output_volume;
-=======
-
-    // if (volume < 0.000001) volume = 0.000001;
-    // else if (volume > 1000000) volume = 1000000;
-
-    return volume;
->>>>>>> a4b3928705c563b9c4c11623e695417af950a78b
  }
