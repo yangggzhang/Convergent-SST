@@ -13,10 +13,10 @@
 
 #include <cmath>
 
-#define MIN_X -5
-#define MAX_X 5
-#define MIN_Y -5
-#define MAX_Y 5
+#define MIN_X -4
+#define MAX_X 4
+#define MIN_Y -4
+#define MAX_Y 4
 
 #define MIN_SPEED 0.5
 #define MAX_SPEED 0.5
@@ -86,8 +86,13 @@ bool climb_hill_t::propagate_with_particles( double* start_state, std::vector<do
 
 	double temp_cost = 0;
 	ConvexHull* conv;
-	double init_vol = conv->ConvexHull_Volume(temp_particles);
+	// std::cout << "pass here" << std::endl;
+	// std::cout << conv->ConvexHull_Volume(temp_particles) << std::endl;
+	// double init_vol = std::max(conv->ConvexHull_Volume(temp_particles), 0.00001);
+	double init_vol = (double)conv->ConvexHull_Volume(temp_particles);
+	// double init_vol = 1;
 	
+	// std::cout << "pass" << std::endl;
 	double theta = control[0]; double u = control[1];
 
 	int num_steps = uniform_int_random(min_step,max_step);
@@ -119,9 +124,12 @@ bool climb_hill_t::propagate_with_particles( double* start_state, std::vector<do
 		validity = validity && valid_state();
 
 		if (validity) {
-			temp_cost += conv->ConvexHull_Volume(temp_particles) * params::integration_step / init_vol;
+			// temp_cost += std::max(conv->ConvexHull_Volume(temp_particles), 0.00001) * params::integration_step / init_vol;
+			temp_cost += (double) conv->ConvexHull_Volume(temp_particles) * params::integration_step / init_vol;
+			// temp_cost = std::min(temp_cost, 1000000.);
 		}
 	}
+	// std::cout << "pass there" << std::endl;
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
 
@@ -154,7 +162,7 @@ bool climb_hill_t::propagate_fixed_duration( double* start_state, std::vector<do
 
 	double temp_cost = 0;
 	ConvexHull* conv;
-	double init_vol = conv->ConvexHull_Volume(temp_particles);
+	double init_vol = (double) conv->ConvexHull_Volume(temp_particles);
 	
 	double theta = control[0]; double u = control[1];
 
@@ -186,12 +194,16 @@ bool climb_hill_t::propagate_fixed_duration( double* start_state, std::vector<do
 
 		validity = validity && valid_state();
 
-		if (validity) {
-			temp_cost += conv->ConvexHull_Volume(temp_particles) * params::integration_step / init_vol;
-		}
+		// if (validity) {
+		// 	// std::cout << conv->ConvexHull_Volume(temp_particles)<<std::endl;
+		// 	temp_cost += (double) conv->ConvexHull_Volume(temp_particles) * params::integration_step / init_vol;
+
+		// }
 	}
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
+
+	double end_vol = (double) conv->ConvexHull_Volume(temp_particles);
 
 	// std::cout << "climb_hill_t:: propagate_with_particles: result_state: " << result_state[0] << " " << result_state[1] << std::endl;
 	// std::cout<<temp_particles.size()<<std::endl;
@@ -204,7 +216,7 @@ bool climb_hill_t::propagate_fixed_duration( double* start_state, std::vector<do
 	}
 
 	duration = num_steps*params::integration_step;
-	Da = temp_cost;
+	Da = 1.0/2.0 * (init_vol + end_vol) * params::integration_step * num_steps / init_vol;
 	return validity;
 
 }
@@ -234,17 +246,29 @@ bool climb_hill_t::valid_state()
 
 double climb_hill_t::hill_height(double* point) {
 	// return 3*point[1] + sin(point[0] + point[0]*point[1]);
-	return 3*point[1] + sin(point[0] + point[0]*point[1]);
+	double height;
+	double dist = std::sqrt(point[0]*point[0] + point[1]*point[1]);
+	if (dist <= 2) height = 1 - dist*dist/4.0;
+	else height = 0;
+	return height;
 }
 
 double climb_hill_t::hill_gradient_x(double* point) {
 	// return cos(point[0] + point[0]*point[1])*(1+point[1]);
-	return cos(point[0] + point[0]*point[1])*(1+point[1]);
+	double dx;
+	double dist = std::sqrt(point[0]*point[0] + point[1]*point[1]);
+	if (dist <= 2) dx = - point[0]/2.0;
+	else dx = 0;
+	return dx;
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
 	// return 3 + cos(point[0]+point[0]*point[1])*point[0];
-	return 3 + cos(point[0]+point[0]*point[1])*point[0];
+	double dy;
+	double dist = std::sqrt(point[0]*point[0] + point[1]*point[1]);
+	if (dist < 2) dy = - point[1]/2.0;
+	else dy = 0;
+	return dy;
 }
 
 svg::Point climb_hill_t::visualize_point(double* state, svg::Dimensions dims)
