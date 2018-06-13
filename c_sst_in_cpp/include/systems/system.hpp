@@ -177,6 +177,17 @@ public:
      */
     virtual svg::Point visualize_point(double* state,svg::Dimensions dims) = 0;
 
+	 /**
+     * @brief Creates a point in image space corresponding to a given state.
+     * @details Creates a point in image space corresponding to a given state.
+     * 
+     * @param state The state in the system's space.
+     * @param dims The size of the destination image.
+     * 
+     * @return A point in image space.
+     */
+    virtual std::string export_point(double* state) = 0;
+
     /**
      * @brief Visualize the obstacles for this system.
      * @details Visualize the obstacles for this system.

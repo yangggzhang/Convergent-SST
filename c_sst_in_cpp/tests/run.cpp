@@ -87,6 +87,9 @@ int main(int ac, char* av[])
 		std::cout<<"check!!!"<<params::trial<<std::endl;
 		planner->visualize_tree(params::trial);
 		planner->visualize_nodes(params::trial);
+		planner->export_solution_path(params::trial);
+		planner->export_nodes(params::trial);
+		planner->export_tree(params::trial);
 	}
 	else
 	{
@@ -111,13 +114,16 @@ int main(int ac, char* av[])
 				{
 					solution_cost+=controls[i].second;
 				}
-				std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				// std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				stats_print = false;
 				if(params::intermediate_visualization)
 				{
 					planner->visualize_tree(count);
 					planner->visualize_nodes(count);
+					planner->export_solution_path(count);
+					planner->export_nodes(count);
+					planner->export_tree(count);
 					count++;
 				}				
 				stats_check->reset();
@@ -131,10 +137,13 @@ int main(int ac, char* av[])
 				{
 					solution_cost+=controls[i].second;
 				}
-				std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				// std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				planner->visualize_tree(params::trial);
 				planner->visualize_nodes(params::trial);
+				planner->export_solution_path(params::trial);
+				planner->export_nodes(params::trial);
+				planner->export_tree(params::trial);
 				break;
 			}
 		}

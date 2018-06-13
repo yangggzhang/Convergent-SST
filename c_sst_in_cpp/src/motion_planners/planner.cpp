@@ -162,3 +162,81 @@ void planner_t::get_max_cost(tree_node_t* node)
 	}
 }
 
+void planner_t::export_solution_path(int csv_counter)
+{
+    if(last_solution_path.size()!=0)
+	{
+		std::stringstream s;
+	    s<<"solution_path_"<<csv_counter<<".csv";
+	    std::string dir(s.str());
+	    std::ofstream doc;
+	    doc.open(dir.c_str(),std::ofstream::out | std::ofstream::trunc);
+
+	    doc << system->get_state_dimension() << std::endl;
+
+	    doc << last_solution_path.size() << "," << number_of_particles << std::endl;
+
+	    for(unsigned i=0;i<last_solution_path.size();i++)
+		{
+			doc << system->export_point(last_solution_path[i]->point);
+			for(int j=0;j<number_of_particles;j++)
+			{
+				doc << system->export_point(last_solution_path[i]->particles[j]);
+			}
+		}
+
+		doc.close();
+	}
+}
+
+void planner_t::export_nodes(int csv_counter)
+{
+	std::stringstream s;
+    s<<"nodes_"<<csv_counter<<".csv";
+    std::string dir(s.str());
+    std::ofstream doc;
+    doc.open(dir.c_str(),std::ofstream::out | std::ofstream::trunc);
+
+    sorted_nodes.clear();
+    get_max_cost();
+    sort(sorted_nodes);
+
+    doc << system->get_state_dimension() << std::endl;
+    doc << sorted_nodes.size() << std::endl;
+    for(unsigned i=sorted_nodes.size()-1;i!=0;i--)
+    {
+	    doc << system->export_point(sorted_nodes[i]->point);
+	}
+
+	doc.close();
+}
+
+void planner_t::export_tree(int csv_counter)
+{
+	std::stringstream s;
+    s<<"tree_"<<csv_counter<<".csv";
+    std::string dir(s.str());
+    std::ofstream doc;
+    doc.open(dir.c_str(),std::ofstream::out | std::ofstream::trunc);
+
+    doc << system->get_state_dimension() << std::endl;
+    doc << system->export_point(start_state) << std::endl;
+    doc << system->export_point(goal_state) << std::endl;
+    doc << std::endl;
+
+    export_edge(root,doc);
+
+	doc.close();
+
+}
+
+void planner_t::export_edge(tree_node_t* node, std::ofstream& doc)
+{
+    for (std::list<tree_node_t*>::iterator i = node->children.begin(); i != node->children.end(); ++i)
+	{
+		doc << system->export_point(node->point);
+		doc << system->export_point((*i)->point);
+		
+		export_edge(*i,doc);
+	}
+}
