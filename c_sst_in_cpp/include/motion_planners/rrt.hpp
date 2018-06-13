@@ -63,6 +63,7 @@ protected:
 	 */
 	double* sample_state;
 
+	double* temp_sample_state;
 	/**
 	 * @brief Particles associated with the propagated state (used in b-rrt).
 	 */

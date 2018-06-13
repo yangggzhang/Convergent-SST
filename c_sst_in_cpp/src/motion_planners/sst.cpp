@@ -24,6 +24,7 @@ void sst_t::setup_planning()
 	best_goal = NULL;
 	//init internal variables
 	sample_state = system->alloc_state_point();
+	temp_sample_state = system->alloc_state_point();
 	control_temp_state = system->alloc_state_point();
 	cost = 0;	
 	for (int i = 0; i < number_of_particles; ++i)
@@ -162,6 +163,7 @@ bool sst_t::propagate()
 	double temp_duration = std::numeric_limits<double>::infinity();
 	double best_biased_cost = std::numeric_limits<double>::infinity();
 	double temp_cost;
+	system->copy_state_point(temp_sample_state, sample_state);
 	
 	for (int i = 0; i < number_of_control; ++i)
 	{
@@ -173,7 +175,7 @@ bool sst_t::propagate()
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
 			local_valid = true;
-			system->copy_state_point(sample_state, control_temp_state);
+			system->copy_state_point(temp_sample_state, control_temp_state);
 			for (int j = 0; j < number_of_particles; ++j)
 			{
 				system->copy_state_point(sample_particles[j],control_temp_particles[j]);
@@ -184,6 +186,7 @@ bool sst_t::propagate()
 		}
 	}
 
+	system->copy_state_point(sample_state, temp_sample_state);
 	cost = best_cost;
 	
 	return local_valid;
