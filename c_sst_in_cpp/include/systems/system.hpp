@@ -205,8 +205,10 @@ protected:
 	/**
 	 * @brief Enforce bounds on the state space.
 	 * @details Enforce bounds on the state space.
+	 * 
+	 * @param state The state we want to enforce bound.
 	 */
-	virtual void enforce_bounds() = 0;
+	virtual void enforce_bounds(double* state) = 0;
 
 	/**
 	 * @brief Determine if the current state is in collision or out of bounds.

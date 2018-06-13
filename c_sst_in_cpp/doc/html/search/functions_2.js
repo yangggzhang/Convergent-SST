@@ -1,6 +1,0 @@
-var searchData=
-[
-  ['delete_5fneighbor',['delete_neighbor',['../classproximity__node__t.html#a4a8ada946ef5159d6486150dbfee6a45',1,'proximity_node_t']]],
-  ['distance',['distance',['../classproximity__node__t.html#a7f97acf04aab7a03374ac0992e509da7',1,'proximity_node_t::distance(const tree_node_t *st)'],['../classproximity__node__t.html#a9bdf9c4b72109d5f998f45f09ea4a1b0',1,'proximity_node_t::distance(const proximity_node_t *other)'],['../classcar__t.html#a136961574ae0d95946baf1bda72309ad',1,'car_t::distance()'],['../classcart__pole__t.html#a45df33d303fdc9f6cc05cb2560500d30',1,'cart_pole_t::distance()'],['../classpendulum__t.html#ad0e521a331e6486a8ce3162d5f0f4004',1,'pendulum_t::distance()'],['../classpoint__t.html#aa4689f6e4bfa9ad29dd84d32645c970c',1,'point_t::distance()'],['../classrally__car__t.html#a45368f18d0a99c9f98d9d35d21781687',1,'rally_car_t::distance()'],['../classsystem__t.html#aa2b6c4b4dce80c36543fa9711fe24716',1,'system_t::distance()'],['../classtwo__link__acrobot__t.html#ae82576db5a4e73f21587d69c1fe13dee',1,'two_link_acrobot_t::distance()']]],
-  ['does_5fnode_5fexist',['does_node_exist',['../classgraph__nearest__neighbors__t.html#a275e762081167d74b2920f6fd2b0776e',1,'graph_nearest_neighbors_t']]]
-];

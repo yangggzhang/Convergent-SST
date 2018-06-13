@@ -12,6 +12,7 @@
 
 #include "motion_planners/rrt.hpp"
 #include "nearest_neighbors/graph_nearest_neighbors.hpp"
+#include "utilities/random.hpp"
 
 #include <iostream>
 #include <deque>
@@ -145,6 +146,8 @@ bool rrt_t::propagate()
 	double temp_duration = std::numeric_limits<double>::infinity();
 	double best_biased_cost = std::numeric_limits<double>::infinity();
 	double temp_cost;
+	int temp_fixed_time_step = uniform_random(params::min_time_steps, params::max_time_steps);
+	int temp_flag_selection = uniform_int_random(0,1);
 
 	system->copy_state_point(temp_sample_state, sample_state);
 
@@ -152,9 +155,11 @@ bool rrt_t::propagate()
 	{
 		
 		temp_cost = best_cost;
-		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
+		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], temp_fixed_time_step,temp_fixed_time_step, control_temp_state,control_temp_particles, temp_duration, temp_cost );
 		double local_distance = system->distance(sample_state,control_temp_state);
-		double local_biased_cost = local_distance * exp(temp_cost);
+		double local_biased_cost; 
+		if (temp_flag_selection == 0) local_biased_cost = local_distance;
+		else local_biased_cost = temp_cost;
 		//double local_biased_cost = temp_cost;
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{

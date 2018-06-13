@@ -70,7 +70,7 @@ bool climb_hill_t::propagate( double* start_state, double* control, int min_step
 
 		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
-		enforce_bounds();
+		enforce_bounds(temp_state);
 		validity = validity && valid_state();
 	}
 	result_state[0] = temp_state[0];
@@ -103,7 +103,7 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
-		enforce_bounds();
+		enforce_bounds(temp_state);
 		validity = validity && valid_state();
 	}
 	result_state[0] = temp_state[0];
@@ -139,6 +139,7 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 				temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 				temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+				enforce_bounds(temp_particles[j]);
 				temp_particles[j][2] = hill_height(temp_particles[j]);
 				
 			}
@@ -146,10 +147,10 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 		double end_vol = (double)conv->ConvexHull_Volume(temp_particles);
 		
-		// local_cost = (init_vol + end_vol)*duration/2.0;
-		// // local_cost = local_cost/init_vol;
+		local_cost = (init_vol + end_vol)*duration/2.0;
+		local_cost = local_cost/init_vol;
 		// std::cout << (end_vol - init_vol) <<" "<< duration << std::endl;
-		local_cost = std::max(0.0, end_vol - init_vol)*duration + 0.001 * duration;
+		// local_cost = std::max(0.0, end_vol - init_vol)*duration + 0.001 * duration;
 		
 		for (size_t i = 0; i < start_particles.size(); i++)
 		{
@@ -165,17 +166,17 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 	return validity;
 }
 
-void climb_hill_t::enforce_bounds()
+void climb_hill_t::enforce_bounds(double* state)
 {
-	if(temp_state[0]<MIN_X)
-		temp_state[0]=MIN_X;
-	else if(temp_state[0]>MAX_X)
-		temp_state[0]=MAX_X;
+	if(state[0]<MIN_X)
+		state[0]=MIN_X;
+	else if(state[0]>MAX_X)
+		state[0]=MAX_X;
 
-	if(temp_state[1]<MIN_Y)
-		temp_state[1]=MIN_Y;
-	else if(temp_state[1]>MAX_Y)
-		temp_state[1]=MAX_Y;
+	if(state[1]<MIN_Y)
+		state[1]=MIN_Y;
+	else if(state[1]>MAX_Y)
+		state[1]=MAX_Y;
 }
 
 

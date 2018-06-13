@@ -51,7 +51,7 @@ public:
 
 	//virtual bool propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da );
 
-	virtual void enforce_bounds();
+	virtual void enforce_bounds(double* state);
 	
 	virtual bool valid_state();
 
