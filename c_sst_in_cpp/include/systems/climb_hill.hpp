@@ -62,6 +62,8 @@ public:
 	double hill_gradient_y(double* point);
 
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
+
+	std::string export_point(double* state);
 };
 
 

@@ -54,7 +54,7 @@ void sort(std::vector<tree_node_t*>& nodes)
 	{
 		tree_node_t* x = nodes[i];
 		unsigned j = i;
-		while(j>0 && nodes[j-1]->cost > x->cost)
+		while(j>0 && nodes[j-1]->path_cost > x->path_cost)
 		{
 			nodes[j] = nodes[j-1];
 			j--;
@@ -109,7 +109,7 @@ void planner_t::visualize_edge(tree_node_t* node, svg::Document& doc, svg::Dimen
 void planner_t::visualize_node(tree_node_t* node, svg::Document& doc, svg::Dimensions& dim)
 {
 
-	svg::Circle circle(system->visualize_point(node->point,dim),params::node_diameter,svg::Fill( svg::Color((node->cost/max_cost)*255,(node->cost/max_cost)*255,(node->cost/max_cost)*255) ) );
+	svg::Circle circle(system->visualize_point(node->point,dim),params::node_diameter,svg::Fill( svg::Color((node->path_cost/max_cost)*255,(node->path_cost/max_cost)*255,(node->path_cost/max_cost)*255) ) );
 	doc<<circle;
 	// for (std::list<tree_node_t*>::iterator i = node->children.begin(); i != node->children.end(); ++i)
 	// {
@@ -154,11 +154,89 @@ void planner_t::get_max_cost()
 void planner_t::get_max_cost(tree_node_t* node)
 {
 	sorted_nodes.push_back(node);
-	if(node->cost > max_cost)
-		max_cost = node->cost;
+	if(node->path_cost > max_cost)
+		max_cost = node->path_cost;
 	for (std::list<tree_node_t*>::iterator i = node->children.begin(); i != node->children.end(); ++i)
 	{
 		get_max_cost(*i);
 	}
 }
 
+void planner_t::export_solution_path(int csv_counter)
+{
+    if(last_solution_path.size()!=0)
+	{
+		std::stringstream s;
+	    s<<"solution_path_"<<csv_counter<<".csv";
+	    std::string dir(s.str());
+	    std::ofstream doc;
+	    doc.open(dir.c_str(),std::ofstream::out | std::ofstream::trunc);
+
+	    doc << system->get_state_dimension() << std::endl;
+
+	    doc << last_solution_path.size() << "," << number_of_particles << std::endl;
+
+	    for(unsigned i=0;i<last_solution_path.size();i++)
+		{
+			doc << system->export_point(last_solution_path[i]->point);
+			for(int j=0;j<number_of_particles;j++)
+			{
+				doc << system->export_point(last_solution_path[i]->particles[j]);
+			}
+		}
+
+		doc.close();
+	}
+}
+
+void planner_t::export_nodes(int csv_counter)
+{
+	std::stringstream s;
+    s<<"nodes_"<<csv_counter<<".csv";
+    std::string dir(s.str());
+    std::ofstream doc;
+    doc.open(dir.c_str(),std::ofstream::out | std::ofstream::trunc);
+
+    sorted_nodes.clear();
+    get_max_cost();
+    sort(sorted_nodes);
+
+    doc << system->get_state_dimension() << std::endl;
+    doc << sorted_nodes.size() << std::endl;
+    for(unsigned i=sorted_nodes.size()-1;i!=0;i--)
+    {
+	    doc << system->export_point(sorted_nodes[i]->point);
+	}
+
+	doc.close();
+}
+
+void planner_t::export_tree(int csv_counter)
+{
+	std::stringstream s;
+    s<<"tree_"<<csv_counter<<".csv";
+    std::string dir(s.str());
+    std::ofstream doc;
+    doc.open(dir.c_str(),std::ofstream::out | std::ofstream::trunc);
+
+    doc << system->get_state_dimension() << std::endl;
+    doc << system->export_point(start_state) << std::endl;
+    doc << system->export_point(goal_state) << std::endl;
+    doc << std::endl;
+
+    export_edge(root,doc);
+
+	doc.close();
+
+}
+
+void planner_t::export_edge(tree_node_t* node, std::ofstream& doc)
+{
+    for (std::list<tree_node_t*>::iterator i = node->children.begin(); i != node->children.end(); ++i)
+	{
+		doc << system->export_point(node->point);
+		doc << system->export_point((*i)->point);
+		
+		export_edge(*i,doc);
+	}
+}

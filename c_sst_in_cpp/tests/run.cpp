@@ -42,9 +42,9 @@ int main(int ac, char* av[])
 	planner_t* planner;
 	if(params::planner=="rrt")
 	{
-		if (params::number_of_particles != 0 && params::number_of_control != 0)
+		if (params::number_of_particles != 0 && params::number_of_control_rrt != 0)
 		{
-			planner = new rrt_t(system, params::number_of_particles, params::particle_radius,params::number_of_control);
+			planner = new rrt_t(system, params::number_of_particles, params::particle_radius,params::number_of_control_rrt);
 		}
 		else planner = new rrt_t(system);
 		
@@ -52,7 +52,7 @@ int main(int ac, char* av[])
 	else if(params::planner=="sst")
 	{
 		if(params::number_of_particles == 0) planner = new sst_t(system);
-		else planner = new sst_t(system, params::number_of_particles, params::particle_radius,params::number_of_control);
+		else planner = new sst_t(system, params::number_of_particles, params::particle_radius,params::number_of_control_sst);
 	}
 
 	planner->set_start_state(params::start_state);
@@ -87,6 +87,9 @@ int main(int ac, char* av[])
 		std::cout<<"check!!!"<<params::trial<<std::endl;
 		planner->visualize_tree(params::trial);
 		planner->visualize_nodes(params::trial);
+		planner->export_solution_path(params::trial);
+		planner->export_nodes(params::trial);
+		planner->export_tree(params::trial);
 	}
 	else
 	{
@@ -111,13 +114,16 @@ int main(int ac, char* av[])
 				{
 					solution_cost+=controls[i].second;
 				}
-				std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				// std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				stats_print = false;
 				if(params::intermediate_visualization)
 				{
 					planner->visualize_tree(count);
 					planner->visualize_nodes(count);
+					planner->export_solution_path(count);
+					planner->export_nodes(count);
+					planner->export_tree(count);
 					count++;
 				}				
 				stats_check->reset();
@@ -131,10 +137,13 @@ int main(int ac, char* av[])
 				{
 					solution_cost+=controls[i].second;
 				}
-				std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				// std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				planner->visualize_tree(params::trial);
 				planner->visualize_nodes(params::trial);
+				planner->export_solution_path(params::trial);
+				planner->export_nodes(params::trial);
+				planner->export_tree(params::trial);
 				break;
 			}
 		}

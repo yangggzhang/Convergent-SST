@@ -14,6 +14,7 @@
 #define SPARSE_PLANNER_HPP
 
 #include <vector>
+#include <fstream>
 
 #include "utilities/parameter_reader.hpp"
 #include "systems/system.hpp"
@@ -116,6 +117,33 @@ public:
 	void visualize_nodes(int image_counter);
 
 	/**
+	 * Kaiwen
+	 * @brief Generate a .csv file containing all the nodes along the solution path together with particles.
+	 * @details Generate a .csv file containing all the nodes along the solution path together with particles.
+	 * 
+	 * @param csv_counter A subscript for the csv file name.
+	 */
+	void export_solution_path(int csv_counter);
+
+	/**
+	* Kaiwen
+	* @brief Generate a .csv file containing all the nodes.
+	* @details Generate a .csv file containing all the nodes.
+	* 
+	* @param csv_counter A subscript for the csv file name.
+	*/
+	void export_nodes(int csv_counter);
+
+	/**
+	* Kaiwen
+	* @brief Generate a .csv file containing all the trees.
+	* @details Generate a .csv file containing all the trees.
+	* 
+	* @param csv_counter A subscript for the csv file name.
+	*/
+	void export_tree(int csv_counter);
+
+	/**
 	 * @brief Find the maximum cost node in the tree.
 	 * @details Find the maximum cost node in the tree.
 	 */
@@ -169,6 +197,17 @@ protected:
 	 * @param dim The size of the image.
 	 */
 	virtual void visualize_edge(tree_node_t* node, svg::Document& doc, svg::Dimensions& dim);
+
+	/**
+	 * Kaiwen
+	 * @brief Output a single edge geometry with a node's parent.
+	 * @details Creates a single edge geometry with a node's parent.
+	 * 
+	 * @param node The target node of the edge.
+	 * @param doc The image storage.
+	 * @param dim The size of the image.
+	 */
+	virtual void export_edge(tree_node_t* node, std::ofstream& doc);
 
 	/**
 	 * @brief Creates a single node geometry.

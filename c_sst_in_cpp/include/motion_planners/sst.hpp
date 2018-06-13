@@ -126,8 +126,14 @@ protected:
 	 * Yang
 	 * @brief A cost of a propagation step.
 	 */
-	double cost;
+	double path_cost;
 
+	/**
+	 * Kaiwen
+	 * @brief A cost of a propagation step.
+	 */
+	double node_cost;
+	
 	/**
 	 * @brief Average divergence measure.
 	 */

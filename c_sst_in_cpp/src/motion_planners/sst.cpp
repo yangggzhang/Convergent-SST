@@ -24,8 +24,7 @@ void sst_t::setup_planning()
 	best_goal = NULL;
 	//init internal variables
 	sample_state = system->alloc_state_point();
-	control_temp_state = system->alloc_state_point();
-	cost = 0;	
+	control_temp_state = system->alloc_state_point();	
 	for (int i = 0; i < number_of_particles; ++i)
 	{
 		sample_particles.push_back(system->alloc_state_point());
@@ -144,7 +143,7 @@ void sst_t::nearest_vertex()
     for(unsigned i=0;i<val;i++)
     {
         tree_node_t* v = (tree_node_t*)(close_nodes[i]->get_state());
-        double temp = v->cost ;
+        double temp = v->path_cost ;
         if( temp < length)
         {
             length = temp;
@@ -162,13 +161,14 @@ bool sst_t::propagate()
 	double temp_duration = std::numeric_limits<double>::infinity();
 	double best_biased_cost = std::numeric_limits<double>::infinity();
 	double temp_cost;
+	int temp_fixed_step_size = uniform_random(params::min_time_steps, params::max_time_steps);
 	
 	for (int i = 0; i < number_of_control; ++i)
 	{
 		temp_cost = best_cost;
-		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
+		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i],temp_fixed_step_size,temp_fixed_step_size, control_temp_state,control_temp_particles, temp_duration, temp_cost );
 		double local_distance = system->distance(sample_state,control_temp_state);
-		double local_biased_cost = local_distance * exp(temp_cost);
+		double local_biased_cost = local_distance * temp_cost;
 		// double local_biased_cost = temp_cost;
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
@@ -184,7 +184,9 @@ bool sst_t::propagate()
 		}
 	}
 
-	cost = best_cost;
+	node_cost = best_cost;
+	if(node_cost > nearest->node_cost) path_cost = (node_cost - nearest->node_cost)*duration + params::epsilon * duration;
+	else path_cost = params::epsilon * duration;
 	
 	return local_valid;
 }
@@ -194,9 +196,9 @@ void sst_t::add_to_tree()
 	//check to see if a sample exists within the vicinity of the new node
 	check_for_witness();
 
-	if(witness_sample->rep==NULL || witness_sample->rep->cost > (nearest->cost + cost) )
+	if(witness_sample->rep==NULL || witness_sample->rep->path_cost > (nearest->path_cost + path_cost) )
 	{
-		if(best_goal==NULL || (nearest->cost + cost) <= best_goal->cost)
+		if(best_goal==NULL || (nearest->path_cost + path_cost) <= best_goal->path_cost)
 		{
 			//create a new tree node
 			sst_node_t* new_node = new sst_node_t();
@@ -216,10 +218,11 @@ void sst_t::add_to_tree()
 			new_node->parent_edge->control = system->alloc_control_point();
 			system->copy_control_point(new_node->parent_edge->control,sample_control);
 			new_node->parent_edge->duration = duration;
-			new_node->parent_edge->cost = cost;
+			new_node->parent_edge->cost = path_cost;
 			//set this node's parent
 			new_node->parent = nearest;
-			new_node->cost = nearest->cost + cost;
+			new_node->path_cost = nearest->path_cost + path_cost;
+			new_node->node_cost = node_cost;
 			//set parent's child
 			nearest->children.insert(nearest->children.begin(),new_node);
 			number_of_nodes++;
@@ -227,12 +230,12 @@ void sst_t::add_to_tree()
 	        if(best_goal==NULL && system->distance(new_node->point,goal_state)<goal_radius)
 	        {
 	        	best_goal = new_node;
-	        	//branch_and_bound((sst_node_t*)root);
+	        	branch_and_bound((sst_node_t*)root);
 	        }
-	        else if(best_goal!=NULL && best_goal->cost > new_node->cost && system->distance(new_node->point,goal_state)<goal_radius)
+	        else if(best_goal!=NULL && best_goal->path_cost > new_node->path_cost && system->distance(new_node->point,goal_state)<goal_radius)
 	        {
 	        	best_goal = new_node;
-	        	//branch_and_bound((sst_node_t*)root);
+	        	branch_and_bound((sst_node_t*)root);
 	        }
 
 
@@ -284,7 +287,7 @@ void sst_t::branch_and_bound(sst_node_t* node)
     {
     	branch_and_bound((sst_node_t*)(*iter));
     }
-    if(is_leaf(node) && node->cost > best_goal->cost)
+    if(is_leaf(node) && node->path_cost > best_goal->path_cost)
     {
     	if(!node->inactive)
     	{

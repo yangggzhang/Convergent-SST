@@ -47,11 +47,13 @@ namespace params
 	//ADD
 	unsigned number_of_particles;
 	double particle_radius;
-	unsigned number_of_control;
+	unsigned number_of_control_rrt;
+	unsigned number_of_control_sst;
 	unsigned fixed_time_step;
 	double b;
 	bool random_time;
 	int trial;
+	double epsilon;
 }
 
 #include <boost/program_options.hpp>
@@ -94,11 +96,13 @@ void read_parameters(int ac, char* av[])
 	("solution_node_diameter",po::value<double>(&params::solution_node_diameter),"Diameter of nodes along solution path in output images.")
 	("number_of_particles",po::value<unsigned>(&params::number_of_particles),"Number of particles generated.") 
 	("particle_radius",po::value<double>(&params::particle_radius),"Radius to generate particles.") 
-	("number_of_control",po::value<unsigned>(&params::number_of_control),"Number of control of b-rrt for each iteration.") 
+	("number_of_control_rrt",po::value<unsigned>(&params::number_of_control_rrt),"Number of control of b-rrt for each iteration.") 
+	("number_of_control_sst",po::value<unsigned>(&params::number_of_control_sst),"Number of control of sst for each iteration.") 
 	("fixed_time_step",po::value<unsigned>(&params::fixed_time_step),"Fixed number of simulation steps per local planner propagation.") 
 	("b",po::value<double>(&params::b),"Biased constant used in the cost function.") 
 	("random_time",po::value<bool>(&params::random_time),"Random time option for propogation.") 
 	("trial",po::value<int>(&params::trial),"Random time option for propogation.") 
+	("epsilon",po::value<double>(&params::epsilon),"Paramenter for the proportional part of the cost to duration.") 
 	;
 
     po::variables_map varmap;

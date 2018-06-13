@@ -58,7 +58,8 @@ public:
 		parent = NULL;
 		parent_edge = NULL;
 		children.clear();
-		cost = 0;
+		node_cost = 0;
+        path_cost = 0;
 	}
 
     /**
@@ -93,9 +94,16 @@ public:
     std::list<tree_node_t*> children;
 
     /**
+     * Kaiwen
      * @brief The path cost to this node.
      */
-    double cost;
+    double path_cost;
+
+    /**
+     * Kaiwen
+     * @brief The node cost of this node.
+     */
+    double node_cost;
 
 };
 

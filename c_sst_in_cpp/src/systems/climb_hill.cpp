@@ -87,8 +87,8 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 	temp_state[0] = start_state[0]; temp_state[1] = start_state[1];
 	double theta = control[0]; double u = control[1];
 
-	int num_steps = 0; // adjust time stamp according to input
-	if (random_time)	num_steps = uniform_int_random(min_step,max_step);
+	int num_steps = 0; // adjust time step according to input
+	if (random_time) num_steps = uniform_int_random(min_step,max_step);
 	else num_steps =  (int)(min_step + max_step)/2;
 
 	bool validity = true;
@@ -125,8 +125,8 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 		}
 
 		ConvexHull* conv;
-		double init_vol = 0;
-		init_vol = (double) conv->ConvexHull_Volume(temp_particles);
+		// double init_vol = 0;
+		// init_vol = (double) conv->ConvexHull_Volume(temp_particles);
 		for (int i = 0; i < num_steps; i++)
 		{
 			for (size_t j = 0; j < start_particles.size(); j++)
@@ -146,9 +146,9 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 		double end_vol = (double)conv->ConvexHull_Volume(temp_particles);
 		
-		local_cost = (init_vol + end_vol)*duration/2.0;
+		local_cost = end_vol;
 		//std::cout<<init_vol <<" "<<end_vol<<std::endl;
-		local_cost = local_cost/init_vol;
+		// local_cost = local_cost/init_vol;
 		//std::cout<<local_cost<<std::endl;
 		for (size_t i = 0; i < start_particles.size(); i++)
 		{
@@ -187,7 +187,7 @@ bool climb_hill_t::valid_state()
 
 double climb_hill_t::hill_height(double* point) {
 
-	//return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
+	// return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
 	double height;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
 	if (dist <= 1) height = 1 - dist*dist;
@@ -202,7 +202,7 @@ double climb_hill_t::hill_height(double* point) {
 
 double climb_hill_t::hill_gradient_x(double* point) {
 	// return cos(point[0] + point[0]*point[1])*(1+point[1]);
-	//return cos(point[0] + point[0]*point[1])*(1+point[1]);
+	// return cos(point[0] + point[0]*point[1])*(1+point[1]);
 	double dx;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
 	if (dist <= 1) dx = -2 * point[0];
@@ -213,7 +213,7 @@ double climb_hill_t::hill_gradient_x(double* point) {
 
 double climb_hill_t::hill_gradient_y(double* point) {
 	// return 3 + cos(point[0]+point[0]*point[1])*point[0];
-	//return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
+	// return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
 	double dy;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
 	if (dist <= 1) dy = -2 * point[1];
@@ -227,4 +227,11 @@ svg::Point climb_hill_t::visualize_point(double* state, svg::Dimensions dims)
 	double x = (state[0]-MIN_X)/(MAX_X-MIN_X) * dims.width; 
 	double y = (state[1]-MIN_Y)/(MAX_Y-MIN_Y) * dims.height; 
 	return svg::Point(x,y);
+}
+
+std::string climb_hill_t::export_point(double* state)
+{
+	std::stringstream s;
+	s << state[0] << "," << state[1] << "," << hill_height(state) << std::endl;
+	return s.str();
 }

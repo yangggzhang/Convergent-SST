@@ -12,6 +12,7 @@
 
 #include "motion_planners/rrt.hpp"
 #include "nearest_neighbors/graph_nearest_neighbors.hpp"
+#include "utilities/random.hpp"
 
 #include <iostream>
 #include <deque>
@@ -24,8 +25,6 @@ void rrt_t::setup_planning()
 	//init internal variables
 	sample_state = system->alloc_state_point();
 	control_temp_state = system->alloc_state_point();
-
-	cost = 0;
 
 	for (int i = 0; i < number_of_particles; ++i)
 	{
@@ -73,7 +72,7 @@ void rrt_t::get_solution(std::vector<std::pair<double*,double> >& controls)
     for(unsigned i=0;i<val;i++)
     {
         tree_node_t* v = (tree_node_t*)(close_nodes[i]->get_state());
-        double temp = v->cost ;
+        double temp = v->path_cost ;
         if( temp < length)
         {
             length = temp;
@@ -144,13 +143,14 @@ bool rrt_t::propagate()
 	double temp_duration = std::numeric_limits<double>::infinity();
 	double best_biased_cost = std::numeric_limits<double>::infinity();
 	double temp_cost;
+	int temp_fixed_step_size = uniform_random(params::min_time_steps, params::max_time_steps);
 	
 	for (int i = 0; i < number_of_control; ++i)
 	{
 		temp_cost = best_cost;
-		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
+		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], temp_fixed_step_size,temp_fixed_step_size, control_temp_state,control_temp_particles, temp_duration, temp_cost );
 		double local_distance = system->distance(sample_state,control_temp_state);
-		double local_biased_cost = local_distance * exp(temp_cost);
+		double local_biased_cost = local_distance * temp_cost;
 		//double local_biased_cost = temp_cost;
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
@@ -166,7 +166,9 @@ bool rrt_t::propagate()
 		}
 	}
 
-	cost = best_cost;
+	node_cost = best_cost;
+	if(node_cost > nearest->node_cost) path_cost = (node_cost - nearest->node_cost)*duration + params::epsilon * duration;
+	else path_cost = params::epsilon * duration;
 	
 	return local_valid;
 	
@@ -189,10 +191,11 @@ void rrt_t::add_to_tree()
 	new_node->parent_edge->control = system->alloc_control_point();
 	system->copy_control_point(new_node->parent_edge->control,sample_control);
 	new_node->parent_edge->duration = duration;
-	new_node->parent_edge->cost = cost;
+	new_node->parent_edge->cost = path_cost;
 	//set this node's parent
 	new_node->parent = nearest;
-	new_node->cost = nearest->cost + cost;
+	new_node->path_cost = nearest->path_cost + path_cost;
+	new_node->node_cost = node_cost;
 	//set parent's child
 	nearest->children.insert(nearest->children.begin(),new_node);
 	add_point_to_metric(new_node);
