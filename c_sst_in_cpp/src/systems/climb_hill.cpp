@@ -146,10 +146,10 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 		double end_vol = (double)conv->ConvexHull_Volume(temp_particles);
 		
-		// local_cost = (init_vol + end_vol)*duration/2.0;
+		local_cost = (init_vol + end_vol)*duration/2.0;
 		// // local_cost = local_cost/init_vol;
 		// std::cout << (end_vol - init_vol) <<" "<< duration << std::endl;
-		local_cost = std::max(0.0, end_vol - init_vol)*duration + 0.001 * duration;
+		//local_cost = std::max(0.0, end_vol - init_vol)*duration + 0.001 * duration;
 		
 		for (size_t i = 0; i < start_particles.size(); i++)
 		{
