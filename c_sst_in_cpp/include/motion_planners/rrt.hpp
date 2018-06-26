@@ -28,16 +28,16 @@ public:
 	 */
 	rrt_t(system_t* in_system) : planner_t(in_system)
 	{
-		number_of_control = 0;
+		
 	}
 	
 	/**
 	 * @copydoc planner_t::planner_t(system_t* in_system, unsigned in_number_of_particles, double in_particle_radius)
 	 */
 	//ADD_KAIWEN
-	rrt_t(system_t* in_system, unsigned in_number_of_particles, double in_particle_radius, unsigned in_number_of_control) : planner_t(in_system, in_number_of_particles, in_particle_radius)
+	rrt_t(system_t* in_system, unsigned in_number_of_particles, double in_particle_radius, unsigned in_number_of_control) : planner_t(in_system, in_number_of_particles, in_particle_radius, in_number_of_control)
 	{
-		number_of_control = in_number_of_control;
+
 	}
 	virtual ~rrt_t(){}
 
@@ -75,11 +75,6 @@ protected:
 	 */
 	double* sample_control;
 
-	/**
-	 * @brief Number of control randomed for each iteration (used in b-rrt).
-	 */
-	//ADD_KAIWEN
-	unsigned number_of_control;
 
 	/**
 	 * @brief A series of random control (used in b-rrt).

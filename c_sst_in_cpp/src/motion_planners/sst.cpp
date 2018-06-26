@@ -21,6 +21,7 @@
 //EDIT
 void sst_t::setup_planning()
 {
+	//std::cout<<"start planning"<<std::endl;
 	best_goal = NULL;
 	//init internal variables
 	sample_state = system->alloc_state_point();
@@ -32,6 +33,24 @@ void sst_t::setup_planning()
 		sample_particles.push_back(system->alloc_state_point());
 		control_temp_particles.push_back(system->alloc_state_point());
 	}
+
+	//initialize output candidates
+	candidate_states.resize(number_of_control);
+
+	candidate_states_particles.resize(number_of_control);
+	for (int i = 0; i < number_of_control; ++i)
+	{
+		candidate_states[i] = system->alloc_state_point();
+		for (int j = 0; j < number_of_particles; j++) candidate_states_particles[i].push_back(system->alloc_state_point());
+	}
+	
+	last_state = system->alloc_state_point();
+
+	selected_state = system->alloc_state_point();
+
+	//std::cout<<"finish planning"<<std::endl;
+
+	//finish
 
 	sample_control = system->alloc_control_point();
 	metric_query = new sst_node_t();
@@ -124,7 +143,9 @@ void sst_t::add_point_to_samples(tree_node_t* state)
 
 void sst_t::random_sample()
 {
-	system->random_state(sample_state);
+	int rand_int = uniform_int_random(0,99);
+	if (rand_int <= 2) system->copy_state_point(sample_state,goal_state);
+	else	system->random_state(sample_state);
 	if (number_of_control == 0) system->random_control(sample_control);
 	else 
 	{
@@ -164,14 +185,18 @@ bool sst_t::propagate()
 	double best_biased_cost = std::numeric_limits<double>::infinity();
 	double temp_cost;
 	system->copy_state_point(temp_sample_state, sample_state);
-	
+	system->copy_state_point(last_state, sample_state);
 	for (int i = 0; i < number_of_control; ++i)
 	{
 		temp_cost = best_cost;
 		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
 		double local_distance = system->distance(sample_state,control_temp_state);
 		double local_biased_cost = local_distance * exp(temp_cost);
-		// double local_biased_cost = temp_cost;
+		system->copy_state_point(candidate_states[i], control_temp_state);
+		for (int j = 0; j < number_of_particles; ++j) 
+		{
+			system->copy_state_point(candidate_states_particles[i][j],control_temp_particles[j]);
+		}
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
 			local_valid = true;
@@ -185,7 +210,7 @@ bool sst_t::propagate()
 			duration = temp_duration;
 		}
 	}
-
+	system->copy_state_point(selected_state, temp_sample_state);
 	system->copy_state_point(sample_state, temp_sample_state);
 	cost = best_cost;
 	

@@ -17,6 +17,7 @@
 #include <deque>
 #include <limits>
 #include <math.h>
+#include "utilities/random.hpp"
 
 //EDIT
 void rrt_t::setup_planning()
@@ -25,6 +26,8 @@ void rrt_t::setup_planning()
 	sample_state = system->alloc_state_point();
 	temp_sample_state = system->alloc_state_point();
 	control_temp_state = system->alloc_state_point();
+
+
 
 	cost = 0;
 
@@ -39,6 +42,21 @@ void rrt_t::setup_planning()
 	{
 		sample_control_sequence.push_back(system->alloc_control_point());
 	}
+
+	//initialize output candidates
+	candidate_states.resize(number_of_control);
+	candidate_states_particles.resize(number_of_control);
+	for (int i = 0; i < number_of_control; ++i)
+	{
+		candidate_states[i] = system->alloc_state_point();
+		for (int j = 0; j < number_of_particles; j++) candidate_states_particles[i].push_back(system->alloc_state_point());
+	}
+	
+	last_state = system->alloc_state_point();
+
+	selected_state = system->alloc_state_point();
+	//finish
+
 
 	metric_query = new tree_node_t();
 	metric_query->point = system->alloc_state_point();
@@ -121,7 +139,9 @@ void rrt_t::add_point_to_metric(tree_node_t* state)
 
 void rrt_t::random_sample()
 {
-	system->random_state(sample_state);
+	int rand_int = uniform_int_random(0,99);
+	if (rand_int <= 2) system->copy_state_point(sample_state,goal_state);
+	else	system->random_state(sample_state);
 	if (number_of_control == 0) system->random_control(sample_control);
 	else 
 	{
@@ -147,6 +167,7 @@ bool rrt_t::propagate()
 	double temp_cost;
 
 	system->copy_state_point(temp_sample_state, sample_state);
+	system->copy_state_point(last_state, sample_state);
 
 	for (int i = 0; i < number_of_control; ++i)
 	{
@@ -156,6 +177,15 @@ bool rrt_t::propagate()
 		double local_distance = system->distance(sample_state,control_temp_state);
 		double local_biased_cost = local_distance * exp(temp_cost);
 		//double local_biased_cost = temp_cost;
+
+
+		system->copy_state_point(candidate_states[i], control_temp_state);
+		for (int j = 0; j < number_of_particles; ++j) 
+		{
+			system->copy_state_point(candidate_states_particles[i][j],control_temp_particles[j]);
+			//std::cout<<control_temp_particles[j][0]<<","<<control_temp_particles[j][1]<<","<<control_temp_particles[j][2]<<std::endl;
+		}
+
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
 			local_valid = true;
@@ -171,6 +201,8 @@ bool rrt_t::propagate()
 	}
 
 	system->copy_state_point(sample_state, temp_sample_state);
+
+	system->copy_state_point(selected_state, temp_sample_state);
 
 	cost = best_cost;
 	

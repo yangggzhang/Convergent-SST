@@ -12,6 +12,12 @@
 
 #include "motion_planners/planner.hpp"
 
+void write_point(std::ofstream &myfile, double* point, double cost, int type)
+{
+	myfile<<point[0]<<","<<point[1]<<","<<point[2]<<","<<cost<<","<<type<<std::endl;
+	
+}
+
 void planner_t::set_start_state(double* in_start)
 {
 	if(start_state==NULL)
@@ -30,7 +36,7 @@ void planner_t::set_goal_state(double* in_goal,double in_radius)
 void planner_t::visualize_tree(int image_counter)
 {
 	std::stringstream s;
-    s<<"tree_"<<image_counter<<".svg";
+    s<<"/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/"<<params::planner<<"_"<<params::number_of_control<<"_"<<image_counter<<"_tree.svg";
     std::string dir(s.str());
     svg::Dimensions dimensions(params::image_width, params::image_height);
     svg::Document doc(dir, svg::Layout(dimensions, svg::Layout::BottomLeft));
@@ -46,6 +52,16 @@ void planner_t::visualize_tree(int image_counter)
     system->visualize_obstacles(doc,dimensions);
 
     doc.save();
+}
+
+void planner_t::write_tree(std::ofstream &myfile)
+{
+	write_edge(root,myfile);
+
+	write_point(myfile,start_state,0,2);
+	write_point(myfile, goal_state,0,3);
+
+	write_solution_path(myfile);
 }
 
 void sort(std::vector<tree_node_t*>& nodes)
@@ -66,7 +82,7 @@ void sort(std::vector<tree_node_t*>& nodes)
 void planner_t::visualize_nodes(int image_counter)
 {
 	std::stringstream s;
-    s<<"nodes_"<<image_counter<<".svg";
+    s<<"/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/"<<params::planner<<"_"<<params::number_of_control<<"_"<<image_counter<<"_node.svg";
     std::string dir(s.str());
     svg::Dimensions dimensions(params::image_width, params::image_height);
     svg::Document doc(dir, svg::Layout(dimensions, svg::Layout::BottomLeft));
@@ -89,6 +105,24 @@ void planner_t::visualize_nodes(int image_counter)
 
     doc.save();
 }
+
+void planner_t::write_nodes(std::ofstream &myfile)
+{
+	sorted_nodes.clear();
+    get_max_cost();
+   // sort(sorted_nodes);
+
+    for(unsigned i=sorted_nodes.size()-1;i!=0;i--)
+    {
+		write_node(sorted_nodes[i], myfile);
+	}
+
+	write_point(myfile,start_state,0,2);
+	write_point(myfile, goal_state,0,3);
+
+	write_solution_nodes(myfile);
+}
+
 void planner_t::visualize_edge(tree_node_t* node, svg::Document& doc, svg::Dimensions& dim)
 {
 
@@ -106,6 +140,20 @@ void planner_t::visualize_edge(tree_node_t* node, svg::Document& doc, svg::Dimen
 
 }
 
+void planner_t::write_edge(tree_node_t* node, std::ofstream &myfile)
+{
+
+	for (std::list<tree_node_t*>::iterator i = node->children.begin(); i != node->children.end(); ++i)
+	{
+		//svg::Polyline traj_line(svg::Stroke(params::tree_line_width, svg::Color::Blue));
+
+		write_point(myfile, node->point,-1.0, 1);
+		write_point(myfile, (*i)->point,-1.0, 1);
+
+		write_edge(*i,myfile);
+	}
+}
+
 void planner_t::visualize_node(tree_node_t* node, svg::Document& doc, svg::Dimensions& dim)
 {
 
@@ -116,6 +164,11 @@ void planner_t::visualize_node(tree_node_t* node, svg::Document& doc, svg::Dimen
 	// 	visualize_node(*i,doc,dim);
 	// }
 
+}
+
+void planner_t::write_node(tree_node_t* node, std::ofstream &myfile)
+{
+	write_point(myfile, node->point,node->cost,0);
 }
 
 void planner_t::visualize_solution_path( svg::Document& doc, svg::Dimensions& dim)
@@ -130,6 +183,18 @@ void planner_t::visualize_solution_path( svg::Document& doc, svg::Dimensions& di
 		doc<<traj_line;
 	}
 }
+
+void planner_t::write_solution_path(std::ofstream &myfile)
+{
+	if(last_solution_path.size()!=0)
+	{
+		for(unsigned i=0;i<last_solution_path.size();i++)
+		{
+			write_point(myfile,last_solution_path[i]->point,0,4);
+		}
+	}
+}
+
 void planner_t::visualize_solution_nodes( svg::Document& doc, svg::Dimensions& dim)
 {
 
@@ -143,7 +208,39 @@ void planner_t::visualize_solution_nodes( svg::Document& doc, svg::Dimensions& d
 	}
 }
 
+void planner_t::write_solution_nodes( std::ofstream &myfile )
+{
 
+	if(last_solution_path.size()!=0)
+	{
+		for(unsigned i=0;i<last_solution_path.size();i++)
+		{
+			write_point(myfile, last_solution_path[i]->point, 0, 5);
+		}
+	}
+}
+
+void planner_t::write_control(std::ofstream &myfile)
+{
+	write_point(myfile,last_state,0,6);
+	for (int i = 0; i < number_of_control; i++)
+	{
+		write_point(myfile,candidate_states[i],0,10+i);
+		for (int j = 0; j < number_of_particles; j++)
+		{
+			write_point(myfile,candidate_states_particles[i][j],0,20+i);
+		}
+	}
+	write_point(myfile,selected_state,0,9);
+}
+
+void planner_t::record(std::ofstream &myfile)
+{
+	write_tree(myfile);
+	write_nodes(myfile);
+	write_control(myfile);
+	myfile<<std::endl;
+}
 
 void planner_t::get_max_cost()
 {

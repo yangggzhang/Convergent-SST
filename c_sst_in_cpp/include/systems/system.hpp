@@ -177,6 +177,8 @@ public:
      */
     virtual svg::Point visualize_point(double* state,svg::Dimensions dims) = 0;
 
+	virtual void write_point(double* state,std::ofstream &myfile) = 0;
+
     /**
      * @brief Visualize the obstacles for this system.
      * @details Visualize the obstacles for this system.
@@ -197,12 +199,16 @@ protected:
 	 */
 	virtual void enforce_bounds() = 0;
 
+	virtual void enforce_bound_particles() = 0;
+
 	/**
 	 * @brief Determine if the current state is in collision or out of bounds.
 	 * @details Determine if the current state is in collision or out of bounds.
 	 * @return True if this state was valid, false if not.
 	 */
 	virtual bool valid_state() = 0;
+
+	virtual bool valid_particles() = 0;
 
 	/**
 	 * @brief The size of the state space.

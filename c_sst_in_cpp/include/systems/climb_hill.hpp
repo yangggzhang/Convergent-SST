@@ -14,7 +14,7 @@ class climb_hill_t : public system_t
 public:
 	climb_hill_t()
 	{
-		state_dimension = 2;
+		state_dimension = 3;
 		control_dimension = 2;
 		temp_state = new double[state_dimension];
 		number_of_particles = 0;
@@ -23,14 +23,14 @@ public:
 
 	climb_hill_t(unsigned in_number_of_particles)
 	{
-		state_dimension = 2;
+		state_dimension = 3;
 		control_dimension = 2;
 		temp_state = new double[state_dimension];
 		number_of_particles = in_number_of_particles;
 		temp_particles.clear();
 		for (int i = 0; i < number_of_particles; ++i)
 		{
-			temp_particles.push_back(new double[state_dimension+1]); //+1 to store the height
+			temp_particles.push_back(new double[state_dimension]); //+1 to store the height
 		}
 	}
 
@@ -52,8 +52,14 @@ public:
 	//virtual bool propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da );
 
 	virtual void enforce_bounds();
+
+	virtual void enforce_bound_particles();
+
+	void enforce_bounds_once(double* sample);
 	
 	virtual bool valid_state();
+
+	virtual bool valid_particles();
 
 	double hill_height(double* point);
 	
@@ -62,6 +68,8 @@ public:
 	double hill_gradient_y(double* point);
 
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
+
+	void write_point(double* state,std::ofstream &myfile);
 };
 
 

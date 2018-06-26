@@ -26,6 +26,8 @@
 #include "motion_planners/rrt.hpp"
 
 #include <iostream>
+#include <fstream>
+#include <string>
 
 int main(int ac, char* av[])
 {
@@ -93,6 +95,22 @@ int main(int ac, char* av[])
 		int count = 0;
 		bool execution_done = false;
 		bool stats_print = false;
+		std::string filename;
+		std::stringstream ss;
+		ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/"<<params::planner<<"_"<<params::number_of_control<<"_"<<params::trial<<".txt";
+		filename = ss.str();
+		std::ofstream myfile;
+  		myfile.open (filename.c_str());
+
+		ss.str("");
+
+		// ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/record"<<params::planner<<"_"<<params::number_of_control<<"_"<<params::trial<<".txt";
+		// std::string record_name;
+		// record_name = ss.str();
+		// std::cout<<record_name<<std::endl;
+		// std::ofstream record_file;
+		// record_file.open(record_name.c_str());
+
 		while(true)
 		{
 			do
@@ -111,8 +129,10 @@ int main(int ac, char* av[])
 				{
 					solution_cost+=controls[i].second;
 				}
-				std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+
+				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<std::endl;
+				//planner->record(record_file);
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				stats_print = false;
 				if(params::intermediate_visualization)
 				{
@@ -132,13 +152,19 @@ int main(int ac, char* av[])
 					solution_cost+=controls[i].second;
 				}
 				std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
+				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<std::endl;
 				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				planner->visualize_tree(params::trial);
 				planner->visualize_nodes(params::trial);
+
+				
 				break;
 			}
 		}
+		myfile.close();
+		//record_file.close();
 	}
+	
 	std::cout<<"Done planning."<<std::endl;
 
 }

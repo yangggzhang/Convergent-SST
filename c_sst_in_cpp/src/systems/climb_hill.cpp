@@ -16,13 +16,15 @@
 #include <math.h>
 #include <sstream>
 
-#define MIN_X -3
-#define MAX_X 3
-#define MIN_Y -3
-#define MAX_Y 3
+#define MIN_X -1.5
+#define MAX_X 1.5
+#define MIN_Y -1.5
+#define MAX_Y 1.5
 
 #define MIN_SPEED 0.5
 #define MAX_SPEED 0.5
+
+#define EPSILON 0.0001
 
 #define D_min std::numeric_limits<double>::min()
 #define D_max std::numeric_limits<double>::max()
@@ -38,14 +40,19 @@ double climb_hill_t::distance(double* point1,double* point2)
 
 void climb_hill_t::random_particles(double* destination, double* state, double radius)
 {
-	destination[0] = state[0] + uniform_random(-radius, radius);
-	destination[1] = state[1] + uniform_random(-radius, radius);
+	double rand_r = uniform_random(0,radius);
+	double rand_theta = uniform_random(-M_PI,M_PI);
+	destination[0] = state[0] + rand_r * cos(rand_theta);
+	destination[1] = state[1] + rand_r * sin(rand_theta);
+	enforce_bounds_once(destination);
+	destination[2] = hill_height(destination);
 }
 
 void climb_hill_t::random_state(double* state)
 {
 	state[0] = uniform_random(MIN_X,MAX_X);
 	state[1] = uniform_random(MIN_Y,MAX_Y);
+	state[2] = hill_height(state);
 }
 
 void climb_hill_t::random_control(double* control)
@@ -92,8 +99,6 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 	else num_steps =  (int)(min_step + max_step)/2;
 
 	bool validity = true;
-
-	//std::cout<<"update state"<<std::endl;
 	//propagate state
 	for(int i=0;i<num_steps;i++)
 	{		
@@ -103,9 +108,11 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 
 		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
+		
 		enforce_bounds();
 		validity = validity && valid_state();
 	}
+
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
 
@@ -117,17 +124,20 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 	if ( start_particles.size() > 0 ) 
 	{
 		local_cost = 0;
-		// iterate through particles for convergent planning
 		for (size_t i = 0; i < start_particles.size(); i++)
 		{
 			temp_particles[i][0] = start_particles[i][0];
 			temp_particles[i][1] = start_particles[i][1];
 			temp_particles[i][2] = hill_height(start_particles[i]);
+			//std::cout<< temp_particles[i][0] <<","<< temp_particles[i][1]<<","<<temp_particles[i][2]<<std::endl;
 		}
 
 		ConvexHull* conv;
 		double init_vol = 0;
 		init_vol = (double) conv->ConvexHull_Volume(temp_particles);
+
+		init_vol += EPSILON;
+
 		for (int i = 0; i < num_steps; i++)
 		{
 			for (size_t j = 0; j < start_particles.size(); j++)
@@ -140,28 +150,35 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 				temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 				temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
 				temp_particles[j][2] = hill_height(temp_particles[j]);
-				
+			}
+			enforce_bound_particles();
+			if (!valid_particles()) 
+			{
+				validity = false;
 			}
 		}
+		//std::cout<<"end"<<std::endl;
 
-		double end_vol = (double)conv->ConvexHull_Volume(temp_particles);
-		
-		local_cost = (init_vol + end_vol)*duration/2.0;
-		// // local_cost = local_cost/init_vol;
-		// std::cout << (end_vol - init_vol) <<" "<< duration << std::endl;
-		//local_cost = std::max(0.0, end_vol - init_vol)*duration + 0.001 * duration;
+		if (validity)
+		{
+			double end_vol = (double)conv->ConvexHull_Volume(temp_particles);
+
+			end_vol += EPSILON;
+
+			local_cost = (init_vol + end_vol)*duration/2.0;
+			local_cost = local_cost/init_vol;
+		}
 		
 		for (size_t i = 0; i < start_particles.size(); i++)
 		{
 			result_particles[i][0] = temp_particles[i][0];
 			result_particles[i][1] = temp_particles[i][1];
+			result_particles[i][2] = temp_particles[i][2];
 			//std::cout << "climb_hill_t:: propagate_with_particles: result_particles: " << result_particles[i][0] << " " << result_particles[i][1] << " " << temp_particles[i][2] << std::endl;
 		}
 	}
 
 	cost = local_cost;
-	
-//	std::cout<<cost<<std::endl;
 	return validity;
 }
 
@@ -178,6 +195,31 @@ void climb_hill_t::enforce_bounds()
 		temp_state[1]=MAX_Y;
 }
 
+void climb_hill_t::enforce_bounds_once(double* sample)
+{
+	if(sample[0]<MIN_X)
+		sample[0]=MIN_X;
+	else if(sample[0]>MAX_X)
+		sample[0]=MAX_X;
+
+	if(sample[1]<MIN_Y)
+		sample[1]=MIN_Y;
+	else if(sample[1]>MAX_Y)
+		sample[1]=MAX_Y;
+}
+
+void climb_hill_t::enforce_bound_particles()
+{
+	for (size_t i = 0; i < temp_particles.size(); i++)
+	{
+		if(temp_particles[i][0]<MIN_X)			temp_particles[i][0]=MIN_X;
+		else if(temp_particles[i][0]>MAX_X)		temp_particles[i][0]=MAX_X;
+		if(temp_particles[i][1]<MIN_Y)			temp_particles[i][1]=MIN_Y;
+		else if(temp_particles[i][1]>MAX_Y)		temp_particles[i][1]=MAX_Y;
+		temp_particles[i][2] = hill_height(temp_particles[i]);
+	}
+}
+
 
 bool climb_hill_t::valid_state()
 {
@@ -187,13 +229,22 @@ bool climb_hill_t::valid_state()
 			(temp_state[1]!=MAX_Y);
 }
 
+bool climb_hill_t::valid_particles()
+{
+	for (size_t i = 0; i < temp_particles.size(); i++)
+	{
+		if(temp_particles[i][0]!= MIN_X && temp_particles[i][0] != MAX_X && temp_particles[i][1] != MIN_Y && temp_particles[i][1] != MAX_Y) return true;
+	}
+	return false;
+}
+
 double climb_hill_t::hill_height(double* point) {
-	//return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
-	double height;
-	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
-	if (dist <= 1) height = 1 - dist*dist;
-	else height = 0.0;
-	return height;
+	return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
+	// double height;
+	// double dist = point[0] * point[0] + point[1] * point[1];
+	// if (dist <= 1) height = 1.0 - dist;
+	// else height = 0.0;
+	// return height;
 	//if height = 18 - dist * dist;
 
 	//return 18.0 - point[0] * point[0] - point[1] * point[1];
@@ -202,23 +253,23 @@ double climb_hill_t::hill_height(double* point) {
 
 double climb_hill_t::hill_gradient_x(double* point) {
 	// return cos(point[0] + point[0]*point[1])*(1+point[1]);
-	//return cos(point[0] + point[0]*point[1])*(1+point[1]);
-	double dx;
-	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
-	if (dist <= 1) dx = -2 * point[0];
-	else dx  = 0.0;
-	return dx;
+	return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
+	// double dx;
+	// double dist = point[0] * point[0] + point[1] * point[1];
+	// if (dist <= 1) dx = -2 * point[0];
+	// else dx  = 0.0;
+	// return dx;
 	//return -2.0 * point[0];
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
 	// return 3 + cos(point[0]+point[0]*point[1])*point[0];
-	//return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
-	double dy;
-	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
-	if (dist <= 1) dy = -2 * point[1];
-	else dy  = 0.0;
-	return dy;
+	return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
+	// double dy;
+	// double dist = point[0] * point[0] + point[1] * point[1];
+	// if (dist <= 1) dy = -2 * point[1];
+	// else dy  = 0.0;
+	// return dy;
 	//return -2.0 * point[1];
 }
 
@@ -228,3 +279,9 @@ svg::Point climb_hill_t::visualize_point(double* state, svg::Dimensions dims)
 	double y = (state[1]-MIN_Y)/(MAX_Y-MIN_Y) * dims.height; 
 	return svg::Point(x,y);
 }
+
+void climb_hill_t::write_point(double* state,std::ofstream &myfile)
+{
+	myfile<<state[0]<<","<<state[1]<<","<<state[2]<<std::endl;
+}
+

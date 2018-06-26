@@ -14,6 +14,7 @@
 #define SPARSE_PLANNER_HPP
 
 #include <vector>
+#include <fstream>
 
 #include "utilities/parameter_reader.hpp"
 #include "systems/system.hpp"
@@ -44,10 +45,11 @@ public:
 		number_of_nodes=0;
 		number_of_particles = 0;
 		particle_radius = 0;
+		number_of_control = 0;
 	}
 
 	//ADD_KAIWEN
-	planner_t(system_t* in_system, unsigned in_number_of_particles, double in_particle_radius)
+	planner_t(system_t* in_system, unsigned in_number_of_particles, double in_particle_radius,  unsigned in_number_of_control)
 	{
 		system = in_system;
 		start_state = NULL;
@@ -55,7 +57,9 @@ public:
 		number_of_nodes=0;
 		number_of_particles = in_number_of_particles;
 		particle_radius = in_particle_radius;
+		number_of_control = in_number_of_control;
 	}
+	
 	virtual ~planner_t()
 	{
 
@@ -106,6 +110,8 @@ public:
 	 */
 	void visualize_tree(int image_counter);
 
+	void write_tree(std::ofstream &myfile); //done
+
 	/**
 	 * @brief Generate an image visualizing the nodes in the tree.
 	 * @details Generate an image visualizing the nodes in the tree. The nodes will have a grayscale
@@ -114,6 +120,10 @@ public:
 	 * @param image_counter A subscript for the image file name. Allows for multiple image output.
 	 */
 	void visualize_nodes(int image_counter);
+	
+	void write_nodes(std::ofstream &myfile);//done
+
+	virtual void record(std::ofstream &myfile);
 
 	/**
 	 * @brief Find the maximum cost node in the tree.
@@ -123,6 +133,12 @@ public:
 
 	/** @brief The number of nodes in the tree. */
 	unsigned number_of_nodes;
+
+	/**
+	 * @brief Number of control randomed for each iteration (used in b-rrt).
+	 */
+	//ADD_KAIWEN
+	unsigned number_of_control;
 
 	/** @brief The number of particles associated with each node. */
 	//ADD
@@ -143,6 +159,7 @@ protected:
 	 */
 	virtual void visualize_solution_path( svg::Document& doc, svg::Dimensions& dim);
 
+	virtual void write_solution_path(std::ofstream &myfile); //done
 	/**
 	 * @brief Create geometries for visualizing the nodes along the solution path.
 	 * @details Create geometries for visualizing the nodes along the solution path.
@@ -151,6 +168,8 @@ protected:
 	 * @param dim The size of the image.
 	 */
 	virtual void visualize_solution_nodes( svg::Document& doc, svg::Dimensions& dim);
+
+	virtual void write_solution_nodes(std::ofstream &myfile); //done
 
 	/**
 	 * @brief A recursive function for finding the highest cost in the tree.
@@ -170,6 +189,8 @@ protected:
 	 */
 	virtual void visualize_edge(tree_node_t* node, svg::Document& doc, svg::Dimensions& dim);
 
+	virtual void write_edge(tree_node_t* node, std::ofstream &myfile); //done
+
 	/**
 	 * @brief Creates a single node geometry.
 	 * @details Creates a single node geometry.
@@ -179,6 +200,12 @@ protected:
 	 * @param dim The size of the image.
 	 */
 	virtual void visualize_node(tree_node_t* node, svg::Document& doc, svg::Dimensions& dim);
+
+	virtual void write_node(tree_node_t* node, std::ofstream &myfile);//done
+
+	virtual void write_control(std::ofstream &myfile);
+
+	
 
  	/**
  	 * @brief The stored solution from previous call to get_solution.
@@ -214,6 +241,28 @@ protected:
 	 * @brief The goal state of the motion planning query.
 	 */
 	double* goal_state;
+
+	/** camdidate states for output
+	 * 
+	 */
+	std::vector<double*> candidate_states;
+
+	/** particles for candidate_states
+	 * 
+	 */
+	std::vector<std::vector<double*> > candidate_states_particles;
+
+	/** last_state starting the propogation
+	 * 
+	 */
+	double* last_state;
+
+	/** solution state from propagations
+	 * 
+	 */
+	double* selected_state;
+
+
 
 	/**
 	 * @brief The size of the spherical goal region around the goal state.
