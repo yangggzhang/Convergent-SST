@@ -47,6 +47,7 @@ namespace params
 	extern unsigned number_of_particles;
 	extern double particle_radius;
 	extern unsigned number_of_control;
+	extern double lambda;
 	extern unsigned fixed_time_step;
 	extern double b;
 	extern bool random_time;

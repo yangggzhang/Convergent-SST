@@ -89,8 +89,26 @@ bool climb_hill_t::propagate( double* start_state, double* control, int min_step
 
 bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_state,std::vector<double*> &start_particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost )
 {	
-	double local_cost = 0;
+//	double init_cost = 0;
+//	double local_cost = 0;
+
+
+	ConvexHull* conv;
+	double init_vol = 0.0;
+	double final_vol = 0.0;
+
 	temp_state[0] = start_state[0]; temp_state[1] = start_state[1];
+
+	for (size_t i = 0; i < start_particles.size(); i++)
+	{
+		temp_particles[i][0] = start_particles[i][0];
+		temp_particles[i][1] = start_particles[i][1];
+		temp_particles[i][2] = hill_height(start_particles[i]);
+		//init_cost += distance(temp_particles[i],temp_state);
+			//std::cout<< temp_particles[i][0] <<","<< temp_particles[i][1]<<","<<temp_particles[i][2]<<std::endl;
+	}
+
+	init_vol = (double) conv->ConvexHull_Volume(temp_particles) + EPSILON;
 
 	double theta = control[0]; double u = control[1];
 
@@ -111,74 +129,40 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 		
 		enforce_bounds();
 		validity = validity && valid_state();
+
+		for (size_t j = 0; j < start_particles.size(); j++)
+		{
+			double temp_dhdx = hill_gradient_x(temp_particles[j]);
+			double temp_dhdy = hill_gradient_y(temp_particles[j]);
+
+			double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
+
+			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
+			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+			temp_particles[j][2] = hill_height(temp_particles[j]);
+
+			//local_cost += distance(temp_state,temp_particles[j])*params::integration_step;
+		}
+		enforce_bound_particles();
+		validity = validity && valid_particles();
 	}
+
+	if (validity) final_vol = (double) conv->ConvexHull_Volume(temp_particles) + EPSILON;
 
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
 
-	duration = num_steps*params::integration_step;
-	local_cost = duration; //default setting
-
-
-	
-	if ( start_particles.size() > 0 ) 
+	for (size_t i = 0; i < start_particles.size(); i++)
 	{
-		local_cost = 0;
-		for (size_t i = 0; i < start_particles.size(); i++)
-		{
-			temp_particles[i][0] = start_particles[i][0];
-			temp_particles[i][1] = start_particles[i][1];
-			temp_particles[i][2] = hill_height(start_particles[i]);
-			//std::cout<< temp_particles[i][0] <<","<< temp_particles[i][1]<<","<<temp_particles[i][2]<<std::endl;
-		}
-
-		ConvexHull* conv;
-		double init_vol = 0;
-		init_vol = (double) conv->ConvexHull_Volume(temp_particles);
-
-		init_vol += EPSILON;
-
-		for (int i = 0; i < num_steps; i++)
-		{
-			for (size_t j = 0; j < start_particles.size(); j++)
-			{
-				double temp_dhdx = hill_gradient_x(temp_particles[j]);
-				double temp_dhdy = hill_gradient_y(temp_particles[j]);
-
-				double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
-
-				temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
-				temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
-				temp_particles[j][2] = hill_height(temp_particles[j]);
-			}
-			enforce_bound_particles();
-			if (!valid_particles()) 
-			{
-				validity = false;
-			}
-		}
-		//std::cout<<"end"<<std::endl;
-
-		if (validity)
-		{
-			double end_vol = (double)conv->ConvexHull_Volume(temp_particles);
-
-			end_vol += EPSILON;
-
-			local_cost = (init_vol + end_vol)*duration/2.0;
-			local_cost = local_cost/init_vol;
-		}
-		
-		for (size_t i = 0; i < start_particles.size(); i++)
-		{
-			result_particles[i][0] = temp_particles[i][0];
-			result_particles[i][1] = temp_particles[i][1];
-			result_particles[i][2] = temp_particles[i][2];
+		result_particles[i][0] = temp_particles[i][0];
+		result_particles[i][1] = temp_particles[i][1];
+		result_particles[i][2] = temp_particles[i][2];
 			//std::cout << "climb_hill_t:: propagate_with_particles: result_particles: " << result_particles[i][0] << " " << result_particles[i][1] << " " << temp_particles[i][2] << std::endl;
-		}
 	}
 
-	cost = local_cost;
+	duration = num_steps*params::integration_step;
+	//std::cout<<duration<<","<<init_vol <<","<< final_vol<<std::endl;
+	cost = params::lambda*duration + duration*(init_vol + final_vol) / 2.0;
 	return validity;
 }
 
@@ -239,12 +223,12 @@ bool climb_hill_t::valid_particles()
 }
 
 double climb_hill_t::hill_height(double* point) {
-	return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
-	// double height;
-	// double dist = point[0] * point[0] + point[1] * point[1];
-	// if (dist <= 1) height = 1.0 - dist;
-	// else height = 0.0;
-	// return height;
+	//return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
+	double height;
+	double dist = point[0] * point[0] + point[1] * point[1];
+	if (dist <= 1) height = 1.0 - dist;
+	else height = 0.0;
+	return height;
 	//if height = 18 - dist * dist;
 
 	//return 18.0 - point[0] * point[0] - point[1] * point[1];
@@ -253,23 +237,23 @@ double climb_hill_t::hill_height(double* point) {
 
 double climb_hill_t::hill_gradient_x(double* point) {
 	// return cos(point[0] + point[0]*point[1])*(1+point[1]);
-	return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
-	// double dx;
-	// double dist = point[0] * point[0] + point[1] * point[1];
-	// if (dist <= 1) dx = -2 * point[0];
-	// else dx  = 0.0;
-	// return dx;
+	//return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
+	double dx;
+	double dist = point[0] * point[0] + point[1] * point[1];
+	if (dist <= 1) dx = -2 * point[0];
+	else dx  = 0.0;
+	return dx;
 	//return -2.0 * point[0];
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
 	// return 3 + cos(point[0]+point[0]*point[1])*point[0];
-	return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
-	// double dy;
-	// double dist = point[0] * point[0] + point[1] * point[1];
-	// if (dist <= 1) dy = -2 * point[1];
-	// else dy  = 0.0;
-	// return dy;
+	// return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
+	double dy;
+	double dist = point[0] * point[0] + point[1] * point[1];
+	if (dist <= 1) dy = -2 * point[1];
+	else dy  = 0.0;
+	return dy;
 	//return -2.0 * point[1];
 }
 

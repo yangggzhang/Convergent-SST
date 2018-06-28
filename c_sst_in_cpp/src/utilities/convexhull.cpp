@@ -30,35 +30,34 @@ double ConvexHull::dot_product(Point_3 &p, Vector_3 &facet_normal){
 
  double ConvexHull::ConvexHull_Volume(std::vector<double*> &raw_points)
  {
-    // double volume;
-    // //std::cout<<"cal"<<std::endl;
-    // Polyhedron_3 poly;
-    // std::vector<Point_3> points;
-    // points.resize(raw_points.size());
-    // for (size_t i = 0; i < raw_points.size();i++)
-    // {
-    //   //std::cout<<raw_points[i][0]<<","<<raw_points[i][1]<<","<<raw_points[i][2]<<std::endl;
-    //   points.push_back(Point_3(raw_points[i][0],raw_points[i][1],raw_points[i][2]));
-    // }
-    // // compute convex hull of non-collinear points
-    // CGAL::convex_hull_3(points.begin(), points.end(), poly);
-    // //std::cout<<"finish hull"<<std::endl;
-    // //std::cout << "The convex hull contains " << poly.size_of_vertices() << " vertices" << std::endl;
+    double volume;
+    //std::cout<<"cal"<<std::endl;
+    Polyhedron_3 poly;
+    std::vector<Point_3> points;
+    points.resize(raw_points.size());
+    for (size_t i = 0; i < raw_points.size();i++)
+    {
+      //std::cout<<raw_points[i][0]<<","<<raw_points[i][1]<<","<<raw_points[i][2]<<std::endl;
+      points.push_back(Point_3(raw_points[i][0],raw_points[i][1],raw_points[i][2]));
+    }
+    // compute convex hull of non-collinear points
+    CGAL::convex_hull_3(points.begin(), points.end(), poly);
+    //std::cout<<"finish hull"<<std::endl;
+    //std::cout << "The convex hull contains " << poly.size_of_vertices() << " vertices" << std::endl;
 
-    // for (Facet_iterator f = poly.facets_begin(); f != poly.facets_end(); f++)
-    // {
-    //     Vector_3 n = facet_normal(f); 
-    //     double area = facet_area(f);
-    //     Point_3 local_point =  f->halfedge()->vertex()->point();
-    //     volume = volume + dot_product(local_point,n)*area;
-    // }
-    // volume = 1.0/3.0*fabs(volume);
-    // std::stringstream ss;
-    // ss << volume;
-    // double output_volume;
-    // ss >> output_volume;
-    // //std::cout<<"finish"<<std::endl;
-    // return output_volume;
+    for (Facet_iterator f = poly.facets_begin(); f != poly.facets_end(); f++)
+    {
+        Vector_3 n = facet_normal(f); 
+        double area = facet_area(f);
+        Point_3 local_point =  f->halfedge()->vertex()->point();
+        volume = volume + dot_product(local_point,n)*area;
+    }
+    volume = 1.0/3.0*fabs(volume);
+    std::stringstream ss;
+    ss << volume;
+    double output_volume;
+    ss >> output_volume;
+    //std::cout<<"finish"<<std::endl;
+    return output_volume;
 
-    return double (rand() % 100 + 1.0);
  }

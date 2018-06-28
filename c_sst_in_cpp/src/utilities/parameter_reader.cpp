@@ -48,6 +48,7 @@ namespace params
 	unsigned number_of_particles;
 	double particle_radius;
 	unsigned number_of_control;
+	double lambda;
 	unsigned fixed_time_step;
 	double b;
 	bool random_time;
@@ -94,7 +95,8 @@ void read_parameters(int ac, char* av[])
 	("solution_node_diameter",po::value<double>(&params::solution_node_diameter),"Diameter of nodes along solution path in output images.")
 	("number_of_particles",po::value<unsigned>(&params::number_of_particles),"Number of particles generated.") 
 	("particle_radius",po::value<double>(&params::particle_radius),"Radius to generate particles.") 
-	("number_of_control",po::value<unsigned>(&params::number_of_control),"Number of control of b-rrt for each iteration.") 
+	("number_of_control",po::value<unsigned>(&params::number_of_control),"Number of control of b-rrt for each iteration.")
+	("lambda",po::value<double>(&params::lambda),"duration biased term.")  
 	("fixed_time_step",po::value<unsigned>(&params::fixed_time_step),"Fixed number of simulation steps per local planner propagation.") 
 	("b",po::value<double>(&params::b),"Biased constant used in the cost function.") 
 	("random_time",po::value<bool>(&params::random_time),"Random time option for propogation.") 
