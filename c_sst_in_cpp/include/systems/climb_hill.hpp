@@ -46,7 +46,7 @@ public:
 
 	virtual bool propagate(double* start_state, double* control, int min_step, int max_step, double* result_state, double& duration );
 
-	virtual bool convergent_propagate( const bool &random_time, double* start_state,std::vector<double*> &start_particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost );
+	virtual bool convergent_propagate( const int &num_steps, double* start_state,std::vector<double*> &start_particles, double* control, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost );
 	//virtual bool propagate_with_particles( double* start_state, std::vector<double*> &particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da );
 
 	//virtual bool propagate_fixed_duration( double* start_state, std::vector<double*> &particles, double* control, int step_size, double* result_state, std::vector<double*> &result_particles, double& duration, double& Da );

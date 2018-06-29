@@ -150,7 +150,7 @@ public:
 	 * @return True if this propagation was valid, false if not.
 	 */
     //ADD_Yang
-	virtual bool convergent_propagate( const bool &random_time, double* start_state,std::vector<double*> &start_particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost ) = 0;
+	virtual bool convergent_propagate( const int &num_steps, double* start_state,std::vector<double*> &start_particles, double* control, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost ) = 0;
 
 	/**
 	 * @brief Performs a local propagation with particles using simple numerical integration.

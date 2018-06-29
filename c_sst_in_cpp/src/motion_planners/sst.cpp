@@ -144,7 +144,7 @@ void sst_t::add_point_to_samples(tree_node_t* state)
 void sst_t::random_sample()
 {
 	int rand_int = uniform_int_random(0,99);
-	if (rand_int <= 2) system->copy_state_point(sample_state,goal_state);
+	if (rand_int <= 4) system->copy_state_point(sample_state,goal_state);
 	else	system->random_state(sample_state);
 	if (number_of_control == 0) system->random_control(sample_control);
 	else 
@@ -186,17 +186,30 @@ bool sst_t::propagate()
 	double temp_cost;
 	system->copy_state_point(temp_sample_state, sample_state);
 	system->copy_state_point(last_state, sample_state);
+
+	int num_steps = 0;
+	if (params::random_time)	num_steps = uniform_int_random(params::min_time_steps,params::max_time_steps);
+	else num_steps =  (int)(params::min_time_steps + params::max_time_steps)/2;
+	
+	int temp_flag_selection = uniform_int_random(0,1);
+
 	for (int i = 0; i < number_of_control; ++i)
 	{
 		temp_cost = best_cost;
-		bool temp_valid = system->convergent_propagate( params::random_time, nearest->point, nearest->particles, sample_control_sequence[i], params::min_time_steps,params::max_time_steps, control_temp_state,control_temp_particles, temp_duration, temp_cost );
-		double local_distance = system->distance(sample_state,control_temp_state);
-		double local_biased_cost = local_distance * exp(temp_cost);
-		system->copy_state_point(candidate_states[i], control_temp_state);
-		for (int j = 0; j < number_of_particles; ++j) 
-		{
-			system->copy_state_point(candidate_states_particles[i][j],control_temp_particles[j]);
-		}
+		bool temp_valid = system->convergent_propagate( num_steps, nearest->point, nearest->particles, sample_control_sequence[i], control_temp_state,control_temp_particles, temp_duration, temp_cost );
+		
+		double local_biased_cost = 0.0;
+		if (temp_flag_selection == 0) local_biased_cost = system->distance(sample_state,control_temp_state);
+		else local_biased_cost = temp_cost;
+		
+		//double local_distance = system->distance(sample_state,control_temp_state);
+		//double local_biased_cost = local_distance * exp(temp_cost);
+		//system->copy_state_point(candidate_states[i], control_temp_state);
+		// for (int j = 0; j < number_of_particles; ++j) 
+		// {
+		// 	system->copy_state_point(candidate_states_particles[i][j],control_temp_particles[j]);
+		// }
+
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
 			local_valid = true;

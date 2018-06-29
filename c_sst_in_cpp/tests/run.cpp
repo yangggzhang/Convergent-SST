@@ -97,7 +97,7 @@ int main(int ac, char* av[])
 		bool stats_print = false;
 		std::string filename;
 		std::stringstream ss;
-		ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/"<<params::planner<<"_"<<params::number_of_control<<"_"<<params::trial<<".txt";
+		ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/ConvexHull/"<<params::planner<<"_"<<params::trial<<".txt";
 		filename = ss.str();
 		std::ofstream myfile;
   		myfile.open (filename.c_str());
@@ -151,7 +151,8 @@ int main(int ac, char* av[])
 				{
 					solution_cost+=controls[i].second;
 				}
-				std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				//std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
 				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<std::endl;
 				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				planner->visualize_tree(params::trial);
