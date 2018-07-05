@@ -52,6 +52,8 @@ namespace params
 	extern double b;
 	extern bool random_time;
 	extern int trial;
+	extern double db;
+	extern double cb;
 }
 
 void read_parameters(int ac, char* av[]);

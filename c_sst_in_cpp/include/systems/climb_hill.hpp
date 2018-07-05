@@ -70,6 +70,8 @@ public:
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
 
 	void write_point(double* state,std::ofstream &myfile);
+
+	double cost_function(double* state, std::vector<double*> particles);
 };
 
 

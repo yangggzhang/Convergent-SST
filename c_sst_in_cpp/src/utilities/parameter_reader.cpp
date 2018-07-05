@@ -49,6 +49,8 @@ namespace params
 	double particle_radius;
 	unsigned number_of_control;
 	double lambda;
+	double db;
+	double cb;
 	unsigned fixed_time_step;
 	double b;
 	bool random_time;
@@ -101,6 +103,9 @@ void read_parameters(int ac, char* av[])
 	("b",po::value<double>(&params::b),"Biased constant used in the cost function.") 
 	("random_time",po::value<bool>(&params::random_time),"Random time option for propogation.") 
 	("trial",po::value<int>(&params::trial),"Random time option for propogation.") 
+	("db",po::value<double>(&params::db),"biased term for distance.") 
+	("cb",po::value<double>(&params::cb),"biased term for cost") 
+	
 	;
 
     po::variables_map varmap;

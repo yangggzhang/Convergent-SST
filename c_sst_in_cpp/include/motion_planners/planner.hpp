@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <fstream>
+#include <limits>
 
 #include "utilities/parameter_reader.hpp"
 #include "systems/system.hpp"
@@ -37,6 +38,9 @@ public:
 	 * @param in_system The system this planner will plan for.
 	 */
 	//EDIT
+
+	double solution_cost;
+
 	planner_t(system_t* in_system)
 	{
 		system = in_system;
@@ -46,6 +50,7 @@ public:
 		number_of_particles = 0;
 		particle_radius = 0;
 		number_of_control = 0;
+		solution_cost = std::numeric_limits<double>::infinity();
 	}
 
 	//ADD_KAIWEN
@@ -58,6 +63,7 @@ public:
 		number_of_particles = in_number_of_particles;
 		particle_radius = in_particle_radius;
 		number_of_control = in_number_of_control;
+		solution_cost = std::numeric_limits<double>::infinity();
 	}
 	
 	virtual ~planner_t()

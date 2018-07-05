@@ -284,6 +284,49 @@ proximity_node_t* graph_nearest_neighbors_t::find_closest( tree_node_t* state, d
     return nodes[min_index];
 }
 
+proximity_node_t* graph_nearest_neighbors_t::find_biased_closest( tree_node_t* state, double* the_distance )
+{
+    if( nr_nodes == 0 )
+        return NULL;
+    
+    int nr_samples = sampling_function();
+    double min_distance = std::numeric_limits<double>::max();
+    int min_index = -1;
+    for( int i=0; i<nr_samples; i++ )
+    {
+	int index = rand() % nr_nodes;
+	double ori_distance = nodes[index]->distance( state );
+	double distance = params::db * ori_distance + params::cb * state->cost;
+	if( distance < min_distance )
+	{
+	    min_distance = distance;
+	    min_index = index;
+	}
+    }
+
+    int old_min_index = min_index;
+    do
+    {
+	old_min_index = min_index;
+	int nr_neighbors;
+	unsigned int* neighbors = nodes[min_index]->get_neighbors( &nr_neighbors );
+	for( int j=0; j<nr_neighbors; j++ )
+	{
+		double ori_distance = nodes[ neighbors[j] ]->distance( state );
+	    double distance = params::db * ori_distance + params::cb * state->cost;
+	    if( distance < min_distance )
+	    {
+		min_distance = distance;
+		min_index = neighbors[j];			
+	    }
+	}
+    }
+    while( old_min_index != min_index );
+
+    *the_distance = min_distance;
+    return nodes[min_index];
+}
+
 
 int graph_nearest_neighbors_t::find_k_close( tree_node_t* state, proximity_node_t** close_nodes, double* distances, int k )
 {

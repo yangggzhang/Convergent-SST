@@ -201,14 +201,6 @@ bool sst_t::propagate()
 		double local_biased_cost = 0.0;
 		if (temp_flag_selection == 0) local_biased_cost = system->distance(sample_state,control_temp_state);
 		else local_biased_cost = temp_cost;
-		
-		//double local_distance = system->distance(sample_state,control_temp_state);
-		//double local_biased_cost = local_distance * exp(temp_cost);
-		//system->copy_state_point(candidate_states[i], control_temp_state);
-		// for (int j = 0; j < number_of_particles; ++j) 
-		// {
-		// 	system->copy_state_point(candidate_states_particles[i][j],control_temp_particles[j]);
-		// }
 
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{

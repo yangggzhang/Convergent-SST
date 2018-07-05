@@ -155,7 +155,7 @@ void rrt_t::nearest_vertex()
 {
 	system->copy_state_point(metric_query->point,sample_state);
 	double distance;
-	nearest = (tree_node_t*)metric->find_closest(metric_query,&distance)->get_state();
+	nearest = (tree_node_t*)metric->find_biased_closest(metric_query,&distance)->get_state();
 }
 //EDIT
 bool rrt_t::propagate()
@@ -215,6 +215,8 @@ bool rrt_t::propagate()
 	system->copy_state_point(selected_state, temp_sample_state);
 
 	cost = best_cost;
+
+	if (nearest->cost + cost > solution_cost) return false;
 	
 	return local_valid;
 	

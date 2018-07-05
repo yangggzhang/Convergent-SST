@@ -193,7 +193,9 @@ class graph_nearest_neighbors_t
          * @param distance The resulting distance between the closest point and the query point.
          * @return The closest point.
          */
-        proximity_node_t* find_closest( tree_node_t* state, double* distance );          
+        proximity_node_t* find_closest( tree_node_t* state, double* distance );  
+        
+        proximity_node_t* find_biased_closest( tree_node_t* state, double* distance );       
         
         /**
          * Find the k closest nodes to the query point. This is performed using a graph search starting from sqrt(nr_points) random points.
