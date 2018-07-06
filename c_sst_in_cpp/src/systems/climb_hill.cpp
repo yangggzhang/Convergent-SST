@@ -173,7 +173,8 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 		final_vol = cost_function(result_state, result_particles);
 
 		duration = num_steps*params::integration_step;
-		cost = params::lambda*duration + duration*(init_vol + final_vol) / 2.0;
+		//cost = params::lambda*duration + duration*(init_vol + final_vol) / 2.0;
+		cost = duration*(init_vol + final_vol) / 2.0;
 
 	}
 	
