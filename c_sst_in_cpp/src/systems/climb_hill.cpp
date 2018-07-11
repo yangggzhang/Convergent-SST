@@ -6,7 +6,6 @@
 
 #include "systems/climb_hill.hpp"
 #include "utilities/random.hpp"
-#include "utilities/convexhull.hpp"
 
 
 #define _USE_MATH_DEFINES
@@ -226,7 +225,9 @@ bool climb_hill_t::valid_particles()
 }
 
 double climb_hill_t::hill_height(double* point) {
-	return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
+
+	return sin(0.5 * point[0]) + cos(point[1]) + 0.5*cos(0.2*point[0]*point[1]);
+	//return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
 	// double height;
 	// double dist = point[0] * point[0] + point[1] * point[1];
 	// if (dist <= 1) height = 1.0 - dist;
@@ -235,7 +236,8 @@ double climb_hill_t::hill_height(double* point) {
 }
 
 double climb_hill_t::hill_gradient_x(double* point) {
-	return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
+	return 0.5*cos(0.5 * point[0]) - 0.1 * (point[1] * sin(0.2 * point[0] * point[1]))
+	//return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
 
 
 	// double dx;
@@ -246,7 +248,8 @@ double climb_hill_t::hill_gradient_x(double* point) {
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
-	return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
+	return - sin(point[1]) - 0.1 * (point[0] * sin(0.2 * point[0] * point[1]))
+	//return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
 
 
 	// double dy;
