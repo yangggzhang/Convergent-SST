@@ -39,7 +39,8 @@ public:
 	 */
 	//EDIT
 
-	double solution_cost;
+	double last_solution_cost;
+	double best_solution_cost;
 
 	planner_t(system_t* in_system)
 	{
@@ -50,7 +51,8 @@ public:
 		number_of_particles = 0;
 		particle_radius = 0;
 		number_of_control = 0;
-		solution_cost = std::numeric_limits<double>::infinity();
+		last_solution_cost = std::numeric_limits<double>::infinity();
+		best_solution_cost = std::numeric_limits<double>::infinity();
 	}
 
 	//ADD_KAIWEN
@@ -63,7 +65,8 @@ public:
 		number_of_particles = in_number_of_particles;
 		particle_radius = in_particle_radius;
 		number_of_control = in_number_of_control;
-		solution_cost = std::numeric_limits<double>::infinity();
+		last_solution_cost = std::numeric_limits<double>::infinity();
+		best_solution_cost = std::numeric_limits<double>::infinity();
 	}
 	
 	virtual ~planner_t()
@@ -77,6 +80,8 @@ public:
 	 */
 	virtual void setup_planning() = 0;
 
+	virtual void restart_planning() = 0;
+
 	/**
 	 * @brief Get the solution path.
 	 * @details Query the tree structure for the solution plan for this given system.
@@ -84,6 +89,10 @@ public:
 	 * @param controls The list of controls and durations which comprise the solution.
 	 */
 	virtual void get_solution(std::vector<std::pair<double*,double> >& controls) = 0;
+
+	virtual void smooth() = 0;
+
+	virtual void update_path();
 
 	/**
 	 * @brief Perform an iteration of a motion planning algorithm.
@@ -211,12 +220,15 @@ protected:
 
 	virtual void write_control(std::ofstream &myfile);
 
+
 	
 
  	/**
  	 * @brief The stored solution from previous call to get_solution.
  	 */
     std::vector<tree_node_t*> last_solution_path;
+
+	std::vector<tree_node_t*> best_solution_path;
 
     /**
      * @brief A temporary storage for sorting nodes based on cost.
@@ -279,7 +291,6 @@ protected:
 	 * @brief The maximum cost found in the tree.
 	 */
 	double max_cost;
-
 };
 
 

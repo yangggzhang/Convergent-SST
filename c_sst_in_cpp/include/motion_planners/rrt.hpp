@@ -47,6 +47,11 @@ public:
 	virtual void setup_planning();
 
 	/**
+	 * 
+	 */
+	virtual void restart_planning();
+
+	/**
 	 * @copydoc planner_t::get_solution(std::vector<std::pair<double*,double> >&)
 	 */
 	virtual void get_solution(std::vector<std::pair<double*,double> >& controls);
@@ -55,6 +60,8 @@ public:
 	 * @copydoc planner_t::step()
 	 */
 	virtual void step();
+
+	virtual void smooth();
 
 protected:
 	

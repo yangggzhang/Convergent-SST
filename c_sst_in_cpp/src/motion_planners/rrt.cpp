@@ -27,8 +27,6 @@ void rrt_t::setup_planning()
 	temp_sample_state = system->alloc_state_point();
 	control_temp_state = system->alloc_state_point();
 
-
-
 	cost = 0;
 
 	for (int i = 0; i < number_of_particles; ++i)
@@ -55,7 +53,7 @@ void rrt_t::setup_planning()
 	last_state = system->alloc_state_point();
 
 	selected_state = system->alloc_state_point();
-	//finish
+	// //finish
 
 
 	metric_query = new tree_node_t();
@@ -81,6 +79,17 @@ void rrt_t::setup_planning()
 	add_point_to_metric(root);
 
 }
+
+void rrt_t::restart_planning()
+{
+	delete metric;
+	metric = new graph_nearest_neighbors_t();
+	metric->set_system(system);
+	number_of_nodes = 1;
+	add_point_to_metric(root);
+
+}
+
 void rrt_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 {
 	last_solution_path.clear();
@@ -119,6 +128,55 @@ void rrt_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 		}
 	}
 }
+
+void rrt_t::smooth()
+{
+	// std::vector<tree_node_t*> last_solution_path;
+	size_t times = last_solution_path.size();
+	size_t current_step = 0;
+	while (current_step < times)
+	{
+		//std::cout<<current_step<<"/"<<times<<std::endl;
+		int current_size = last_solution_path.size();
+		//std::vector<tree_edge_t*> temp_solution_path(last_solution_path);
+		int start_vertice = uniform_int_random(0 , current_size - 1);
+		int end_vertice = uniform_int_random(0 , current_size - 1);
+		if (start_vertice > end_vertice)
+		{
+			int temp_vertice = start_vertice;
+			start_vertice = end_vertice;
+			end_vertice = temp_vertice;
+		}
+
+		std::vector<tree_node_t*> temp_solution_path;
+		//temp_solution_path.resize(current_size - end_vertice + start_vertice + 1);
+
+		for (size_t i = 0; i <= start_vertice; i++)
+		{
+			temp_solution_path.push_back(last_solution_path[i]);
+		}
+
+		for (size_t i = end_vertice; i < current_size; i++)
+		{
+			temp_solution_path.push_back(last_solution_path[i]);
+		}
+		//std::cout<<start_vertice<<","<<end_vertice<<","<<current_size<<"propose"<<temp_solution_path.size()<<std::endl;
+		//double temp_cost = uniform_random(0,100);
+
+		double temp_cost = system->go_through_path(temp_solution_path);
+		if (temp_cost < last_solution_cost)
+		{
+			//std::cout<<"update"<<std::endl;
+			last_solution_path.clear();
+			for (size_t i = 0; i < temp_solution_path.size(); i++)	last_solution_path.push_back(temp_solution_path[i]);
+			last_solution_cost = temp_cost;
+			//std::cout<<"update length : "<<last_solution_path.size()<<std::endl;
+		}
+		current_step ++;
+	}
+	//std::cout<<"updated length"<<last_solution_path.size()<<std::endl;
+}
+
 void rrt_t::step()
 {
 	random_sample();
@@ -185,17 +243,6 @@ bool rrt_t::propagate()
 		if (temp_flag_selection == 0) local_biased_cost = system->distance(sample_state,control_temp_state);
 		else local_biased_cost = temp_cost;
 
-		// double local_distance = system->distance(sample_state,control_temp_state);
-		// double local_biased_cost = local_distance * exp(temp_cost);
-		//double local_biased_cost = temp_cost;
-
-
-		// system->copy_state_point(candidate_states[i], control_temp_state);
-		// for (int j = 0; j < number_of_particles; ++j) 
-		// {
-		// 	system->copy_state_point(candidate_states_particles[i][j],control_temp_particles[j]);
-		// }
-
 		if (temp_valid && local_biased_cost < best_biased_cost)
 		{
 			local_valid = true;
@@ -215,8 +262,6 @@ bool rrt_t::propagate()
 	system->copy_state_point(selected_state, temp_sample_state);
 
 	cost = best_cost;
-
-	if (nearest->cost + cost > solution_cost) return false;
 	
 	return local_valid;
 	
@@ -247,6 +292,31 @@ void rrt_t::add_to_tree()
 	nearest->children.insert(nearest->children.begin(),new_node);
 	add_point_to_metric(new_node);
 	number_of_nodes++;
+
+
+	if (system->distance(new_node->point,goal_state) < goal_radius)
+	{
+		last_solution_cost = 0.0;
+		last_solution_path.clear();
+		std::deque<tree_node_t*> path;
+		nearest = new_node;
+		while(nearest->parent!=NULL)
+		{
+			path.push_front(nearest);
+			nearest = nearest->parent;
+		}
+		last_solution_path.push_back(root);
+		for(unsigned i=0;i<path.size();i++)
+		{
+			last_solution_path.push_back(path[i]);
+			last_solution_cost += path[i]->parent_edge->cost;
+		}
+		//std::cout<<"Current: "<<last_solution_cost<<", Best: "<<best_solution_cost<<std::endl;
+		//smooth();
+		update_path();
+		restart_planning();
+		number_of_nodes = 0;
+	}
 
 }
 

@@ -35,6 +35,7 @@ int main(int ac, char* av[])
 	//****************After reading in from input, we need to instantiate classes
 	init_random(time(NULL));
 	system_t* system;
+	bool is_rrt = 0;
 	if(params::system=="climb_hill")
 	{
 		if(params::number_of_particles == 0) system = new climb_hill_t();
@@ -44,6 +45,7 @@ int main(int ac, char* av[])
 	planner_t* planner;
 	if(params::planner=="rrt")
 	{
+		is_rrt = 1;
 		if (params::number_of_particles != 0 && params::number_of_control != 0)
 		{
 			planner = new rrt_t(system, params::number_of_particles, params::particle_radius,params::number_of_control);
@@ -78,14 +80,19 @@ int main(int ac, char* av[])
 			// std::cout << "Finish one step" << std::endl;
 		}
 		while(!checker.check());
-		std::vector<std::pair<double*,double> > controls;
-		planner->get_solution(controls);
-		planner->solution_cost = 0;
-		for(unsigned i=0;i<controls.size();i++)
+		if (!is_rrt)
 		{
-			planner->solution_cost+=controls[i].second;
+			std::vector<std::pair<double*,double> > controls;
+			planner->get_solution(controls);
+			planner->last_solution_cost = 0;
+
+			for(unsigned i=0;i<controls.size();i++)
+			{
+				planner->last_solution_cost+=controls[i].second;
+			}
+			planner->update_path();
 		}
-		std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<planner->solution_cost<<std::endl ;
+		std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<planner->best_solution_cost<<std::endl ;
 		std::cout<<"check!!!"<<params::trial<<std::endl;
 		planner->visualize_tree(params::trial);
 		planner->visualize_nodes(params::trial);
@@ -122,17 +129,21 @@ int main(int ac, char* av[])
 			while(!execution_done && !stats_print);
 			if(stats_print)
 			{
-				std::vector<std::pair<double*,double> > controls;
-				planner->get_solution(controls);
-				planner->solution_cost = 0;
-				for(unsigned i=0;i<controls.size();i++)
+				if (!is_rrt)
 				{
-					planner->solution_cost+=controls[i].second;
-				}
+					std::vector<std::pair<double*,double> > controls;
+					planner->get_solution(controls);
+					planner->last_solution_cost = 0;
 
-				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->solution_cost<<std::endl;
+					for(unsigned i=0;i<controls.size();i++)
+					{
+						planner->last_solution_cost+=controls[i].second;
+					}
+					planner->update_path();
+				}
+				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<std::endl;
 				//planner->record(record_file);
-				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->solution_cost<<std::endl ;
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<std::endl ;
 				stats_print = false;
 				if(params::intermediate_visualization)
 				{
@@ -144,16 +155,21 @@ int main(int ac, char* av[])
 			}
 			if (execution_done)
 			{
-				std::vector<std::pair<double*,double> > controls;
-				planner->get_solution(controls);
-				planner->solution_cost = 0;
-				for(unsigned i=0;i<controls.size();i++)
+				if (!is_rrt)
 				{
-					planner->solution_cost+=controls[i].second;
+					std::vector<std::pair<double*,double> > controls;
+					planner->get_solution(controls);
+					planner->last_solution_cost = 0;
+
+					for(unsigned i=0;i<controls.size();i++)
+					{
+						planner->last_solution_cost+=controls[i].second;
+					}
+					planner->update_path();
 				}
-				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->solution_cost<<std::endl ;
+				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<std::endl ;
 				//std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->solution_cost<<std::endl;
+				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<std::endl;
 				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
 				planner->visualize_tree(params::trial);
 				planner->visualize_nodes(params::trial);

@@ -15,6 +15,7 @@
 
 #include "image_creation/svg_image.hpp"
 #include "utilities/parameter_reader.hpp"
+#include "motion_planners/tree_node.hpp"
 
 /**
  * @brief A base class for plannable systems.
@@ -190,6 +191,9 @@ public:
     {
     	return;
     }
+
+	/*return cost going through the path*/
+	virtual double go_through_path(std::vector<tree_node_t*> path) = 0;
 
 protected:
 

@@ -94,6 +94,7 @@ void sst_t::setup_planning()
 void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 {
 	last_solution_path.clear();
+	//last_solution_path.clear();
 	if(best_goal==NULL)
 		return;
 	nearest = best_goal;
@@ -106,9 +107,11 @@ void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 		nearest = (sst_node_t*)nearest->parent;
 	}
 	last_solution_path.push_back(root);
+	//last_solution_path.push_back(root);
 	for(unsigned i=0;i<path.size();i++)
 	{
 		last_solution_path.push_back(path[i]);
+		//last_solution_path.push_back(path[i]);
 		controls.push_back(std::pair<double*,double>(NULL,0));
 		controls.back().first = system->alloc_control_point();
 		system->copy_control_point(controls.back().first,path[i]->parent_edge->control);

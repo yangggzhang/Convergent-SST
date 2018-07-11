@@ -173,12 +173,12 @@ void planner_t::write_node(tree_node_t* node, std::ofstream &myfile)
 
 void planner_t::visualize_solution_path( svg::Document& doc, svg::Dimensions& dim)
 {
-	if(last_solution_path.size()!=0)
+	if(best_solution_path.size()!=0)
 	{
 		svg::Polyline traj_line(svg::Stroke(params::solution_line_width, svg::Color::Black));
-		for(unsigned i=0;i<last_solution_path.size();i++)
+		for(unsigned i=0;i<best_solution_path.size();i++)
 		{
-			traj_line<<system->visualize_point(last_solution_path[i]->point,dim);
+			traj_line<<system->visualize_point(best_solution_path[i]->point,dim);
 		}
 		doc<<traj_line;
 	}
@@ -186,11 +186,11 @@ void planner_t::visualize_solution_path( svg::Document& doc, svg::Dimensions& di
 
 void planner_t::write_solution_path(std::ofstream &myfile)
 {
-	if(last_solution_path.size()!=0)
+	if(best_solution_path.size()!=0)
 	{
-		for(unsigned i=0;i<last_solution_path.size();i++)
+		for(unsigned i=0;i<best_solution_path.size();i++)
 		{
-			write_point(myfile,last_solution_path[i]->point,0,4);
+			write_point(myfile,best_solution_path[i]->point,0,4);
 		}
 	}
 }
@@ -198,11 +198,11 @@ void planner_t::write_solution_path(std::ofstream &myfile)
 void planner_t::visualize_solution_nodes( svg::Document& doc, svg::Dimensions& dim)
 {
 
-	if(last_solution_path.size()!=0)
+	if(best_solution_path.size()!=0)
 	{
-		for(unsigned i=0;i<last_solution_path.size();i++)
+		for(unsigned i=0;i<best_solution_path.size();i++)
 		{
-			svg::Circle circle(system->visualize_point(last_solution_path[i]->point,dim),params::solution_node_diameter,svg::Fill( svg::Color(0,255,0) ));
+			svg::Circle circle(system->visualize_point(best_solution_path[i]->point,dim),params::solution_node_diameter,svg::Fill( svg::Color(0,255,0) ));
 			doc<<circle;
 		}
 	}
@@ -211,11 +211,11 @@ void planner_t::visualize_solution_nodes( svg::Document& doc, svg::Dimensions& d
 void planner_t::write_solution_nodes( std::ofstream &myfile )
 {
 
-	if(last_solution_path.size()!=0)
+	if(best_solution_path.size()!=0)
 	{
-		for(unsigned i=0;i<last_solution_path.size();i++)
+		for(unsigned i=0;i<best_solution_path.size();i++)
 		{
-			write_point(myfile, last_solution_path[i]->point, 0, 5);
+			write_point(myfile, best_solution_path[i]->point, 0, 5);
 		}
 	}
 }
@@ -259,3 +259,16 @@ void planner_t::get_max_cost(tree_node_t* node)
 	}
 }
 
+
+void planner_t::update_path()
+{
+	if (last_solution_cost < best_solution_cost)
+	{
+		best_solution_path.clear();
+		for (size_t i = 0 ; i < last_solution_path.size(); i++)
+		{
+			best_solution_path.push_back(last_solution_path[i]);
+		}
+		best_solution_cost = last_solution_cost;
+	}
+}

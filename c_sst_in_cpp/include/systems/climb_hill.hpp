@@ -72,6 +72,8 @@ public:
 	void write_point(double* state,std::ofstream &myfile);
 
 	double cost_function(double* state, std::vector<double*> particles);
+
+	virtual double go_through_path(std::vector<tree_node_t*> path);
 };
 
 

@@ -112,23 +112,18 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 
 	init_vol = cost_function(temp_state,temp_particles);
 
-	//init_vol = (double) conv->ConvexHull_Volume(temp_particles) + EPSILON;
-	for (size_t i = 0; i < temp_particles.size(); i++) init_vol += distance(temp_state,temp_particles[i]);
-
 	double theta = control[0]; double u = control[1];
 
 	bool validity = true;
 	//propagate state
 	for(int i=0;i<num_steps;i++)
 	{		
-		//double dhdx = hill_gradient_x(temp_state);
-		//double dhdy = hill_gradient_y(temp_state);
-		//double delta_h = dhdx * cos(theta) + dhdy * sin(theta);
+		double dhdx = hill_gradient_x(temp_state);
+		double dhdy = hill_gradient_y(temp_state);
+		double delta_h = dhdx * cos(theta) + dhdy * sin(theta);
 
-		//temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
-		//temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
-		double mean_x = 0.0;
-		double mean_y = 0.0;
+		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
+		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
 		
 		for (size_t j = 0; j < start_particles.size(); j++)
 		{
@@ -140,19 +135,12 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
 			//local_cost += distance(temp_state,temp_particles[j])*params::integration_step;
-			
-			mean_x += temp_particles[j][0];
-			mean_y += temp_particles[j][1];
 		}
 
-		temp_state[0] = mean_x/(double)start_particles.size();
-		temp_state[1] = mean_y/(double)start_particles.size();
-
 		enforce_bounds();
-		enforce_bound_particles();
+		//enforce_bound_particles();
 			
-		validity = validity && valid_state() && valid_particles() ;
-		if (!validity) return validity;
+		validity = validity && valid_state();
 	}
 
 	if (validity) 
@@ -168,7 +156,6 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 			result_particles[i][2] = hill_height(result_particles[i]);
 			//std::cout << "climb_hill_t:: propagate_with_particles: result_particles: " << result_particles[i][0] << " " << result_particles[i][1] << " " << temp_particles[i][2] << std::endl;
 		}
-		//for (size_t i = 0; i < temp_particles.size(); i++) final_vol += distance(temp_state,temp_particles[i]);
 
 		final_vol = cost_function(result_state, result_particles);
 
@@ -297,5 +284,75 @@ double climb_hill_t::cost_function(double* state, std::vector<double*> particles
 	return var_cost;
 }
 
+double climb_hill_t::go_through_path(std::vector<tree_node_t*> path)
+{
+	std::vector<double*> path_particles;
+	path_particles.resize(path[0]->particles.size());
+	for (size_t i = 0; i < path_particles.size(); i++)  
+	{
+		path_particles[i] = alloc_state_point();
+		copy_state_point(path_particles[i],path[0]->particles[i]);
+	}
+	double path_cost = 0.0;
+	double* current_state = alloc_state_point();
+	double* next_state = alloc_state_point();
+	double* step_state = alloc_state_point();
+	copy_state_point(current_state,path[0]->point);
+	copy_state_point(step_state,current_state);
+	for (size_t i = 1; i < path.size(); i++)
+	{
+		double init_vol = cost_function(current_state,path_particles);
+		copy_state_point(next_state,path[i]->point);
+		double theta = atan2(next_state[1] - current_state[1], next_state[0] - current_state[0]);
+		double u = MAX_SPEED;
+		double local_duration = 0.0;
+		bool forward = true;
+		
+		while(forward){
+
+			double dhdx = hill_gradient_x(step_state);
+			double dhdy = hill_gradient_y(step_state);
+			double delta_h = dhdx * cos(theta) + dhdy * sin(theta);
+			
+			double step_size = params::integration_step;
+			double local_integration_step = (next_state[0] - step_state[0])/ ( u * (-2/M_PI * atan(delta_h) + 1) * cos(theta));
+			
+			if (local_integration_step < params::integration_step) 
+			{
+				step_size = local_integration_step;
+				forward = false;
+			}
+
+			step_state[0] += step_size * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
+			step_state[1] += step_size * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
+		
+			for (size_t j = 0; j < path_particles.size(); j++)
+			{
+				double temp_dhdx = hill_gradient_x(path_particles[j]);
+				double temp_dhdy = hill_gradient_y(path_particles[j]);
+
+				double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
+
+				path_particles[j][0] += step_size * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
+				path_particles[j][1] += step_size * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+			//local_cost += distance(temp_state,temp_particles[j])*params::integration_step;
+			}
+			local_duration += step_size;
+		}
+
+
+		for (size_t j = 0; j < path_particles.size(); j++)
+		{
+				path_particles[j][2] = hill_height(path_particles[j]);
+		}
+
+		double final_vol = cost_function(next_state,path_particles);
+		double local_cost = local_duration*(init_vol + final_vol) / 2.0;
+		path_cost += local_cost;
+		copy_state_point(current_state,next_state);
+		copy_state_point(step_state,current_state);
+	}
+	return path_cost;
+}
 
 
