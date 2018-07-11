@@ -65,6 +65,7 @@ void sst_t::setup_planning()
 	//create the root of the tree
 	root = new sst_node_t();
 	root->point = system->alloc_state_point();
+	root->cost = 0;
 	// root->cost = 1;
 	system->copy_state_point(root->point,start_state);
 	for (int i = 0; i < number_of_particles; ++i)

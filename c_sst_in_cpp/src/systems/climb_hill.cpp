@@ -16,10 +16,10 @@
 #include <sstream>
 #include <vector>
 
-#define MIN_X -3.0
-#define MAX_X 3.0
-#define MIN_Y -3.0
-#define MAX_Y 3.0
+#define MIN_X -10.0
+#define MAX_X 10.0
+#define MIN_Y -10.0
+#define MAX_Y 10.0
 
 #define MIN_SPEED 0.5
 #define MAX_SPEED 0.5
@@ -92,6 +92,7 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 
 
 	//ConvexHull* conv;
+	cost = 0.0;
 
 	double init_vol = 0.0;
 	double final_vol = 0.0;
@@ -123,6 +124,7 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 
 		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
+		temp_state[2] = hill_height(temp_state);
 		
 		for (size_t j = 0; j < start_particles.size(); j++)
 		{
@@ -133,9 +135,12 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 
 			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+			temp_particles[j][2] = hill_height(temp_particles[j]);
 			//local_cost += distance(temp_state,temp_particles[j])*params::integration_step;
 		}
-
+		final_vol = cost_function(temp_state,temp_particles);
+		cost += (init_vol + final_vol)/2.0*params::integration_step;
+		init_vol = final_vol;
 		enforce_bounds();
 		//enforce_bound_particles();
 			
@@ -156,11 +161,11 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 			//std::cout << "climb_hill_t:: propagate_with_particles: result_particles: " << result_particles[i][0] << " " << result_particles[i][1] << " " << temp_particles[i][2] << std::endl;
 		}
 
-		final_vol = cost_function(result_state, result_particles);
+		//final_vol = cost_function(result_state, result_particles);
 
 		duration = num_steps*params::integration_step;
 		//cost = params::lambda*duration + duration*(init_vol + final_vol) / 2.0;
-		cost = duration*(init_vol + final_vol) / 2.0;
+		//cost = duration*(init_vol + final_vol) / 2.0;
 
 	}
 	
@@ -236,7 +241,7 @@ double climb_hill_t::hill_height(double* point) {
 }
 
 double climb_hill_t::hill_gradient_x(double* point) {
-	return 0.5*cos(0.5 * point[0]) - 0.1 * (point[1] * sin(0.2 * point[0] * point[1]))
+	return 0.5*cos(0.5 * point[0]) - 0.1 * (point[1] * sin(0.2 * point[0] * point[1]));
 	//return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
 
 
@@ -248,7 +253,7 @@ double climb_hill_t::hill_gradient_x(double* point) {
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
-	return - sin(point[1]) - 0.1 * (point[0] * sin(0.2 * point[0] * point[1]))
+	return - sin(point[1]) - 0.1 * (point[0] * sin(0.2 * point[0] * point[1]));
 	//return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
 
 

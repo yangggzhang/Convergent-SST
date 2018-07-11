@@ -69,6 +69,7 @@ void rrt_t::setup_planning()
 	root = new tree_node_t();
 	number_of_nodes++;
 	root->point = system->alloc_state_point();
+	root->cost = 0;
 	system->copy_state_point(root->point,start_state);
 	for (int i = 0; i < number_of_particles; ++i)
 	{
@@ -85,6 +86,16 @@ void rrt_t::restart_planning()
 	delete metric;
 	metric = new graph_nearest_neighbors_t();
 	metric->set_system(system);
+	delete root;
+	root = new tree_node_t();
+	root->cost = 0.0;
+	root->point = system->alloc_state_point();
+	system->copy_state_point(root->point,start_state);
+	for (int i = 0; i < number_of_particles; ++i)
+	{
+		root->particles.push_back(system->alloc_state_point());
+		system->random_particles(root->particles.back(), start_state, particle_radius);
+	}
 	number_of_nodes = 1;
 	add_point_to_metric(root);
 
@@ -309,13 +320,12 @@ void rrt_t::add_to_tree()
 		for(unsigned i=0;i<path.size();i++)
 		{
 			last_solution_path.push_back(path[i]);
-			last_solution_cost += path[i]->parent_edge->cost;
 		}
 		//std::cout<<"Current: "<<last_solution_cost<<", Best: "<<best_solution_cost<<std::endl;
 		//smooth();
+		last_solution_cost = new_node->cost;
 		update_path();
 		restart_planning();
-		number_of_nodes = 0;
 	}
 
 }
