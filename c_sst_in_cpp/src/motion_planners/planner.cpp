@@ -36,7 +36,7 @@ void planner_t::set_goal_state(double* in_goal,double in_radius)
 void planner_t::visualize_tree(int image_counter)
 {
 	std::stringstream s;
-    s<<"/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/meanstate/"<<params::planner<<"_"<<image_counter<<"_tree.svg";
+    s<<"/home/yang/Documents/Convergent-RRT/c_sst_in_cpp/data/case1/"<<params::planner<<"_"<<image_counter<<"_tree.svg";
     std::string dir(s.str());
     svg::Dimensions dimensions(params::image_width, params::image_height);
     svg::Document doc(dir, svg::Layout(dimensions, svg::Layout::BottomLeft));
@@ -82,7 +82,7 @@ void sort(std::vector<tree_node_t*>& nodes)
 void planner_t::visualize_nodes(int image_counter)
 {
 	std::stringstream s;
-    s<<"/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/meanstate/"<<params::planner<<"_"<<image_counter<<"_node.svg";
+    s<<"/home/yang/Documents/Convergent-RRT/c_sst_in_cpp/data/case1/"<<params::planner<<"_"<<image_counter<<"_node.svg";
     std::string dir(s.str());
     svg::Dimensions dimensions(params::image_width, params::image_height);
     svg::Document doc(dir, svg::Layout(dimensions, svg::Layout::BottomLeft));

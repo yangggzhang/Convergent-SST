@@ -17,10 +17,10 @@
 #include <sstream>
 #include <vector>
 
-#define MIN_X -1.5
-#define MAX_X 1.5
-#define MIN_Y -1.5
-#define MAX_Y 1.5
+#define MIN_X -3.0
+#define MAX_X 3.0
+#define MIN_Y -3.0
+#define MAX_Y 3.0
 
 #define MIN_SPEED 0.5
 #define MAX_SPEED 0.5

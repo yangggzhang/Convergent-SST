@@ -50,8 +50,7 @@ int main(int ac, char* av[])
 		{
 			planner = new rrt_t(system, params::number_of_particles, params::particle_radius,params::number_of_control);
 		}
-		else planner = new rrt_t(system);
-		
+		else planner = new rrt_t(system);	
 	}
 	else if(params::planner=="sst")
 	{
@@ -94,8 +93,8 @@ int main(int ac, char* av[])
 		}
 		std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<planner->best_solution_cost<<std::endl ;
 		std::cout<<"check!!!"<<params::trial<<std::endl;
-		planner->visualize_tree(params::trial);
-		planner->visualize_nodes(params::trial);
+		//planner->visualize_tree(params::trial);
+		//planner->visualize_nodes(params::trial);
 	}
 	else
 	{
@@ -104,8 +103,7 @@ int main(int ac, char* av[])
 		bool stats_print = false;
 		std::string filename;
 		std::stringstream ss;
-		ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/meanstate/"<<params::planner<<"_"<<params::trial<<".txt";
-		filename = ss.str();
+		ss << "/home/yang/Documents/Convergent-RRT/c_sst_in_cpp/data/case1/"<<params::planner<<"_"<<params::trial<<".txt";		filename = ss.str();
 		std::ofstream myfile;
   		myfile.open (filename.c_str());
 
@@ -147,8 +145,8 @@ int main(int ac, char* av[])
 				stats_print = false;
 				if(params::intermediate_visualization)
 				{
-					planner->visualize_tree(count);
-					planner->visualize_nodes(count);
+					//planner->visualize_tree(count);
+					//planner->visualize_nodes(count);
 					count++;
 				}				
 				stats_check->reset();
@@ -171,8 +169,8 @@ int main(int ac, char* av[])
 				//std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
 				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<std::endl;
 				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
-				planner->visualize_tree(params::trial);
-				planner->visualize_nodes(params::trial);
+				//planner->visualize_tree(params::trial);
+				//planner->visualize_nodes(params::trial);
 
 				
 				break;
