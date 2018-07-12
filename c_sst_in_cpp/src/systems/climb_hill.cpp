@@ -16,10 +16,10 @@
 #include <sstream>
 #include <vector>
 
-#define MIN_X -10.0
-#define MAX_X 10.0
-#define MIN_Y -10.0
-#define MAX_Y 10.0
+#define MIN_X -1.5
+#define MAX_X 1.5
+#define MIN_Y -1.5
+#define MAX_Y 1.5
 
 #define MIN_SPEED 0.5
 #define MAX_SPEED 0.5
@@ -121,7 +121,9 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 		double dhdx = hill_gradient_x(temp_state);
 		double dhdy = hill_gradient_y(temp_state);
 		double delta_h = dhdx * cos(theta) + dhdy * sin(theta);
-
+		
+		//temp_state[0] += params::integration_step * u *  cos(theta);
+		//temp_state[1] += params::integration_step * u *  sin(theta);
 		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
 		temp_state[2] = hill_height(temp_state);
@@ -132,6 +134,9 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 			double temp_dhdy = hill_gradient_y(temp_particles[j]);
 
 			double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
+
+			temp_particles[j][0] += params::integration_step * u  * cos(theta);
+			temp_particles[j][1] += params::integration_step * u  * sin(theta);
 
 			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
@@ -231,8 +236,10 @@ bool climb_hill_t::valid_particles()
 
 double climb_hill_t::hill_height(double* point) {
 
-	return sin(0.5 * point[0]) + cos(point[1]) + 0.5*cos(0.2*point[0]*point[1]);
+	//return sin(0.5 * point[0]) + cos(point[1]) + 0.5*cos(0.2*point[0]*point[1]);
 	//return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
+	return sin(point[0] * point[1]);
+
 	// double height;
 	// double dist = point[0] * point[0] + point[1] * point[1];
 	// if (dist <= 1) height = 1.0 - dist;
@@ -241,9 +248,10 @@ double climb_hill_t::hill_height(double* point) {
 }
 
 double climb_hill_t::hill_gradient_x(double* point) {
-	return 0.5*cos(0.5 * point[0]) - 0.1 * (point[1] * sin(0.2 * point[0] * point[1]));
+	//return 0.5*cos(0.5 * point[0]) - 0.1 * (point[1] * sin(0.2 * point[0] * point[1]));
 	//return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
 
+	return point[1] * cos(point[0] * point[1]);
 
 	// double dx;
 	// double dist = point[0] * point[0] + point[1] * point[1];
@@ -253,9 +261,9 @@ double climb_hill_t::hill_gradient_x(double* point) {
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
-	return - sin(point[1]) - 0.1 * (point[0] * sin(0.2 * point[0] * point[1]));
+	//return - sin(point[1]) - 0.1 * (point[0] * sin(0.2 * point[0] * point[1]));
 	//return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
-
+	return point[0] * cos(point[0] * point[1]);
 
 	// double dy;
 	// double dist = point[0] * point[0] + point[1] * point[1];

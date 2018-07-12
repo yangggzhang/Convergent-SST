@@ -130,6 +130,7 @@ int main(int ac, char* av[])
 				{		
 					planner->last_solution_cost+=controls[i].second;
 				}	
+				planner->update_path();
 				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<std::endl;
 				//planner->record(record_file);
 				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<std::endl ;

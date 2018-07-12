@@ -148,7 +148,7 @@ void sst_t::add_point_to_samples(tree_node_t* state)
 void sst_t::random_sample()
 {
 	int rand_int = uniform_int_random(0,99);
-	if (rand_int <= 4) system->copy_state_point(sample_state,goal_state);
+	if (rand_int <= 2) system->copy_state_point(sample_state,goal_state);
 	else	system->random_state(sample_state);
 	if (number_of_control == 0) system->random_control(sample_control);
 	else 
@@ -264,12 +264,12 @@ void sst_t::add_to_tree()
 	        if(best_goal==NULL && system->distance(new_node->point,goal_state)<goal_radius)
 	        {
 	        	best_goal = new_node;
-	        	//branch_and_bound((sst_node_t*)root);
+	        	branch_and_bound((sst_node_t*)root);
 	        }
 	        else if(best_goal!=NULL && best_goal->cost > new_node->cost && system->distance(new_node->point,goal_state)<goal_radius)
 	        {
 	        	best_goal = new_node;
-	        	//branch_and_bound((sst_node_t*)root);
+	        	branch_and_bound((sst_node_t*)root);
 	        }
 
 
