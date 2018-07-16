@@ -31,9 +31,9 @@
 
 double climb_hill_t::distance(double* point1,double* point2)
 {
-	double height1 = hill_height(point1);
-	double height2 = hill_height(point2);
-	return std::sqrt( (point1[0]-point2[0]) * (point1[0]-point2[0]) + (point1[1]-point2[1]) * (point1[1]-point2[1]) + (height1 - height2) * (height1 - height2) );
+	// double height1 = hill_height(point1);
+	// double height2 = hill_height(point2);
+	return std::sqrt( (point1[0]-point2[0]) * (point1[0]-point2[0]) + (point1[1]-point2[1]) * (point1[1]-point2[1]));
 }
 
 void climb_hill_t::random_particles(double* destination, double* state, double radius)
@@ -51,6 +51,7 @@ void climb_hill_t::random_state(double* state)
 void climb_hill_t::random_control(double* control)
 {
 	control[0] = uniform_random(-M_PI,M_PI);
+	// control[0] = 0.0;
 	control[1] = uniform_random(MIN_SPEED, MAX_SPEED);
 }
 
@@ -103,9 +104,9 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 			temp_particles[i][2] = hill_height(start_particles[i]);
 		}
 
-		for (int i = 0; i < start_particles.size(); ++i)
+		for (size_t i = 0; i < start_particles.size(); ++i)
 		{
-			init_De += distance(start_state, start_particles[i]);
+			init_De += distance(temp_state, temp_particles[i]);
 		}
 	}
 
@@ -113,14 +114,14 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 	//propagate state
 	for(int i=0;i<num_steps;i++)
 	{		
-		double dhdx = hill_gradient_x(temp_state);
-		double dhdy = hill_gradient_y(temp_state);
-		double delta_h = dhdx * cos(theta) + dhdy * sin(theta);
+		// double dhdx = hill_gradient_x(temp_state);
+		// double dhdy = hill_gradient_y(temp_state);
+		// double delta_h = dhdx * cos(theta) + dhdy * sin(theta);
 
-		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
-		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
-		enforce_bounds(temp_state);
-		validity = validity && valid_state();
+		// temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
+		// temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
+		// enforce_bounds(temp_state);
+		// validity = validity && valid_state();
 
 		if (start_particles.size() > 0)
 		{
@@ -136,17 +137,40 @@ bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_
 				enforce_bounds(temp_particles[j]);
 				temp_particles[j][2] = hill_height(temp_particles[j]);
 				
-				local_cost += distance(start_state, start_particles[i]);
 			}
 		}
 
+
 	}
+	
+	double end_De = 0;
+	temp_state[0] = 0; temp_state[1] = 0; temp_state[2] = 0;
+	if (start_particles.size() > 0)
+	{
+		for (size_t j = 0; j < start_particles.size(); j++)
+		{
+			temp_state[0] += temp_particles[j][0];
+			temp_state[1] += temp_particles[j][1];
+		}
+
+		temp_state[0] = temp_state[0]/number_of_particles;
+		temp_state[1] = temp_state[1]/number_of_particles;
+
+		for (size_t j = 0; j < start_particles.size(); j++)
+		{
+			end_De += distance(temp_state, temp_particles[j]);
+		}
+	}
+
+	enforce_bounds(temp_state);
+	validity = validity && valid_state();
+
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
 
 	duration = num_steps*params::integration_step;
 	// local_cost = duration; //default setting
-	local_cost = local_cost/init_De;
+	local_cost = (init_De+end_De)/2*duration;
 
 
 	
@@ -206,7 +230,7 @@ double climb_hill_t::hill_gradient_x(double* point) {
 	// return cos(point[0] + point[0]*point[1])*(1+point[1]);
 	double dx;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
-	if (dist <= 1) dx = -2 * point[0];
+	if (dist <= 1) dx = -2.0*point[0];
 	else dx  = 0.0;
 	return dx;
 	//return -2.0 * point[0];
@@ -217,7 +241,7 @@ double climb_hill_t::hill_gradient_y(double* point) {
 	// return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
 	double dy;
 	double dist = std::sqrt(point[0] * point[0] + point[1] * point[1]);
-	if (dist <= 1) dy = -2 * point[1];
+	if (dist <= 1) dy = -2.0*point[1];
 	else dy  = 0.0;
 	return dy;
 	//return -2.0 * point[1];

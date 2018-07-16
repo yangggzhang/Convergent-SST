@@ -157,7 +157,13 @@ void sst_t::nearest_vertex()
 //EDIT
 bool sst_t::propagate()
 {
-	//return system->convergent_propagate(params::random_time, nearest->point, nearest->particles, sample_control, params::min_time_steps,params::max_time_steps, sample_state, sample_particles, duration, cost);
+	// if (number_of_particles == 0)
+	// {
+	// 	bool temp_valid = system->convergent_propagate(params::random_time, nearest->point, nearest->particles, sample_control, params::min_time_steps,params::max_time_steps, sample_state, sample_particles, duration, cost);
+	// 	cost = duration;
+	// 	return temp_valid;
+	// }
+
 	double best_cost = std::numeric_limits<double>::infinity();
 	bool local_valid = false;
 	double temp_duration = std::numeric_limits<double>::infinity();
