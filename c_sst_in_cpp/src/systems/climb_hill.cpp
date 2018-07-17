@@ -236,40 +236,35 @@ bool climb_hill_t::valid_particles()
 
 double climb_hill_t::hill_height(double* point) {
 
-	//return sin(0.5 * point[0]) + cos(point[1]) + 0.5*cos(0.2*point[0]*point[1]);
-	//return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
-	//return sin(point[0] * point[1]);
+	
+	return 3.0*point[1] + sin(point[0] + point[0]*point[1]);
 
-	double height;
-	double dist = point[0] * point[0] + point[1] * point[1];
-	if (dist <= 1) height = 1.0 - dist;
-	else height = 0.0;
-	return height;
+	// double height;
+	// double dist = point[0] * point[0] + point[1] * point[1];
+	// if (dist <= 1) height = 1.0 - dist;
+	// else height = 0.0;
+	// return height;
 }
 
 double climb_hill_t::hill_gradient_x(double* point) {
-	//return 0.5*cos(0.5 * point[0]) - 0.1 * (point[1] * sin(0.2 * point[0] * point[1]));
-	//return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
 
-	//return point[1] * cos(point[0] * point[1]);
+	return cos(point[0] + point[0]*point[1])*(1.0+point[1]);
 
-	double dx;
-	double dist = point[0] * point[0] + point[1] * point[1];
-	if (dist <= 1) dx = -2 * point[0];
-	else dx  = 0.0;
-	return dx;
+	// double dx;
+	// double dist = point[0] * point[0] + point[1] * point[1];
+	// if (dist <= 1) dx = -2 * point[0];
+	// else dx  = 0.0;
+	// return dx;
 }
 
 double climb_hill_t::hill_gradient_y(double* point) {
-	//return - sin(point[1]) - 0.1 * (point[0] * sin(0.2 * point[0] * point[1]));
-	//return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
-	//return point[0] * cos(point[0] * point[1]);
+	return 3.0 + cos(point[0]+point[0]*point[1])*point[0];
 
-	double dy;
-	double dist = point[0] * point[0] + point[1] * point[1];
-	if (dist <= 1) dy = -2 * point[1];
-	else dy  = 0.0;
-	return dy;
+	// double dy;
+	// double dist = point[0] * point[0] + point[1] * point[1];
+	// if (dist <= 1) dy = -2 * point[1];
+	// else dy  = 0.0;
+	// return dy;
 }
 
 svg::Point climb_hill_t::visualize_point(double* state, svg::Dimensions dims)
