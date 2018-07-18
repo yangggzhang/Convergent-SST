@@ -17,6 +17,7 @@
 #include <deque>
 #include <limits>
 #include <math.h>
+#include <openrave-core.h>
 #include "utilities/random.hpp"
 
 //EDIT

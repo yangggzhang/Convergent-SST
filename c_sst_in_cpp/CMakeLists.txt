@@ -7,17 +7,20 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 add_definitions(-O3 )
+add_definitions(${OpenRAVE_LINK_FLAGS})
+add_definitions(${OpenRAVE_CXX_FLAGS})
 
 find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(OpenRAVE 0.9 REQUIRED)
 
-include_directories(${Boost_INCLUDE_DIR})
+include_directories( ${OpenRAVE_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 
 file(GLOB_RECURSE SRC_LIB ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/include/*.hpp)
 
 add_library(${PROJECT_NAME} SHARED ${SRC_LIB})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME} ${OpenRAVE_INCLUDE_DIRS} ${Boost_LIBRARIES} )
 
 file(GLOB files ${PROJECT_SOURCE_DIR}/tests/*.cpp)
 
