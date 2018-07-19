@@ -2,19 +2,6 @@ cmake_minimum_required(VERSION 2.8.4)
 project(SparseRRT)
 
 
-find_package( CGAL QUIET COMPONENTS  )
-
-if ( NOT CGAL_FOUND )
-
-  message(STATUS "This project requires the CGAL library, and will not be compiled.")
-  return()  
-
-endif()
-
-# include helper file
-include( ${CGAL_USE_FILE} )
-
-
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
