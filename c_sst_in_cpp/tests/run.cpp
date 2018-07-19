@@ -92,7 +92,7 @@ int main(int ac, char* av[])
 		bool stats_print = false;
 		std::string filename;
 		std::stringstream ss;
-		ss << "/home/yang/Documents/Convergent-RRT/c_sst_in_cpp/data/"<<params::planner<<"_"<<params::trial<<".txt";		filename = ss.str();
+		ss << "/home/youngzh/Documents/Convergent-SST/c_sst_in_cpp/data/case2/"<<params::planner<<"_"<<params::trial<<".txt";		filename = ss.str();
 		std::ofstream myfile;
   		myfile.open (filename.c_str());
 
