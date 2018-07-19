@@ -135,8 +135,8 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 
 			double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
 
-			temp_particles[j][0] += params::integration_step * u  * cos(theta);
-			temp_particles[j][1] += params::integration_step * u  * sin(theta);
+			//temp_particles[j][0] += params::integration_step * u  * cos(theta);
+			//temp_particles[j][1] += params::integration_step * u  * sin(theta);
 
 			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
