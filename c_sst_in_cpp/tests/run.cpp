@@ -21,6 +21,8 @@
 #include "motion_planners/sst.hpp"
 #include "motion_planners/rrt.hpp"
 
+#include <openrave-core.h>
+
 #include <iostream>
 
 int main(int ac, char* av[])
