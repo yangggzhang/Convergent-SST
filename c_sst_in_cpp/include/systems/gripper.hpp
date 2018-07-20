@@ -64,7 +64,9 @@ public:
 
 	double cost_function(double* state, std::vector<double*> particles);
 
-	virtual double go_through_path(std::vector<tree_node_t*> path);
+	virtual double go_through_path(std::vector<tree_node_t*> path) {return 0.0;};
+
+	virtual void load_openrave();
 };
 
 

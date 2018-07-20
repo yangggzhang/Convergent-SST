@@ -16,6 +16,10 @@
 #include "image_creation/svg_image.hpp"
 #include "utilities/parameter_reader.hpp"
 #include "motion_planners/tree_node.hpp"
+#include <openrave-core.h>
+
+using namespace std;
+using namespace OpenRAVE;
 
 /**
  * @brief A base class for plannable systems.
@@ -195,6 +199,8 @@ public:
 	/*return cost going through the path*/
 	virtual double go_through_path(std::vector<tree_node_t*> path) = 0;
 
+	virtual void load_openrave() = 0;
+
 protected:
 
 	/**
@@ -240,6 +246,8 @@ protected:
 	 */
 	//ADD
 	unsigned number_of_particles;
+
+	EnvironmentBasePtr penv;
 	
 };
 

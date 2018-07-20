@@ -163,6 +163,8 @@ public:
 	//ADD
 	double particle_radius;
 
+	virtual void write_solution_path(std::ofstream &myfile); //done
+
 protected:
 
 	/**
@@ -174,7 +176,7 @@ protected:
 	 */
 	virtual void visualize_solution_path( svg::Document& doc, svg::Dimensions& dim);
 
-	virtual void write_solution_path(std::ofstream &myfile); //done
+	
 	/**
 	 * @brief Create geometries for visualizing the nodes along the solution path.
 	 * @details Create geometries for visualizing the nodes along the solution path.

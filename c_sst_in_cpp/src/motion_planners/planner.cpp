@@ -36,7 +36,7 @@ void planner_t::set_goal_state(double* in_goal,double in_radius)
 void planner_t::visualize_tree(int image_counter)
 {
 	std::stringstream s;
-    s<<"/home/youngzh/Documents/Convergent-SST/c_sst_in_cpp/data/case2/"<<params::planner<<"_"<<image_counter<<"_tree.svg";
+    s<<"/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/gripper/"<<params::planner<<"_"<<image_counter<<"_tree.svg";
     std::string dir(s.str());
     svg::Dimensions dimensions(params::image_width, params::image_height);
     svg::Document doc(dir, svg::Layout(dimensions, svg::Layout::BottomLeft));
@@ -82,7 +82,7 @@ void sort(std::vector<tree_node_t*>& nodes)
 void planner_t::visualize_nodes(int image_counter)
 {
 	std::stringstream s;
-    s<<"/home/youngzh/Documents/Convergent-SST/c_sst_in_cpp/data/case2/"<<params::planner<<"_"<<image_counter<<"_node.svg";
+    s<<"/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/gripper/"<<params::planner<<"_"<<image_counter<<"_node.svg";
     std::string dir(s.str());
     svg::Dimensions dimensions(params::image_width, params::image_height);
     svg::Document doc(dir, svg::Layout(dimensions, svg::Layout::BottomLeft));
@@ -191,7 +191,15 @@ void planner_t::write_solution_path(std::ofstream &myfile)
 		for(unsigned i=0;i<best_solution_path.size();i++)
 		{
 			write_point(myfile,best_solution_path[i]->point,0,4);
+			for (int j = 0; j < params::number_of_particles; j++)
+			{
+				//std::cout<<best_solution_path[i]->particles[j][0]<<best_solution_path[i]->particles[j][1]<<best_solution_path[i]->particles[j][2]<<std::endl;
+				write_point(myfile,best_solution_path[i]->particles[j],0,5);
+			}
+			myfile<<std::endl;
 		}
+		
+
 	}
 }
 

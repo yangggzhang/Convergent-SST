@@ -16,6 +16,7 @@
 #include "utilities/timer.hpp"
 
 #include "systems/climb_hill.hpp"
+#include "systems/gripper.hpp"
 #include "motion_planners/sst.hpp"
 #include "motion_planners/rrt.hpp"
 
@@ -34,6 +35,7 @@ int main(int ac, char* av[])
 		if(params::number_of_particles == 0) system = new climb_hill_t();
 		else system = new climb_hill_t(params::number_of_particles);
 	}
+	else if (params::system == "gripper") system = new gripper_t(params::number_of_particles);
 
 	planner_t* planner;
 	if(params::planner=="rrt")
@@ -92,18 +94,19 @@ int main(int ac, char* av[])
 		bool stats_print = false;
 		std::string filename;
 		std::stringstream ss;
-		ss << "/home/youngzh/Documents/Convergent-SST/c_sst_in_cpp/data/case2/"<<params::planner<<"_"<<params::trial<<".txt";		filename = ss.str();
+		ss <<"/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/gripper/"<<params::planner<<"_"<<params::trial<<".txt";		
+		filename = ss.str();
 		std::ofstream myfile;
   		myfile.open (filename.c_str());
 
 		ss.str("");
 
-		// ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/record"<<params::planner<<"_"<<params::number_of_control<<"_"<<params::trial<<".txt";
-		// std::string record_name;
-		// record_name = ss.str();
-		// std::cout<<record_name<<std::endl;
-		// std::ofstream record_file;
-		// record_file.open(record_name.c_str());
+		ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/gripper"<<params::planner<<"_"<<params::number_of_control<<"_"<<params::trial<<".txt";
+		std::string record_name;
+		record_name = ss.str();
+		std::cout<<record_name<<std::endl;
+		std::ofstream record_file;
+		record_file.open(record_name.c_str());
 
 		while(true)
 		{
@@ -148,11 +151,11 @@ int main(int ac, char* av[])
 					planner->last_solution_cost+=controls[i].second;
 				}
 				planner->update_path();
-				
 				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<std::endl ;
 				//std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
 				myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<std::endl;
 				//std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				planner->write_solution_path(record_file);
 				planner->visualize_tree(params::trial);
 				planner->visualize_nodes(params::trial);
 
@@ -161,7 +164,7 @@ int main(int ac, char* av[])
 			}
 		}
 		myfile.close();
-		//record_file.close();
+		record_file.close();
 	}
 	
 	std::cout<<"Done planning."<<std::endl;

@@ -79,7 +79,7 @@ void rrt_t::setup_planning()
 	}
 	//add root to nearest neighbor structure
 	add_point_to_metric(root);
-
+	system->load_openrave();
 }
 
 void rrt_t::restart_planning()
