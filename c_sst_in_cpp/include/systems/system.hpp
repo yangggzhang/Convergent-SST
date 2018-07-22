@@ -15,6 +15,12 @@
 
 #include "image_creation/svg_image.hpp"
 #include "utilities/parameter_reader.hpp"
+// #include <openrave/openrave.h>
+// #include <openrave/plugin.h>
+// #include <boost/bind.hpp>
+#include <openrave-core.h>
+
+using namespace OpenRAVE;
 
 /**
  * @brief A base class for plannable systems.
@@ -200,6 +206,14 @@ public:
     	return;
     }
 
+    void load_openrave()
+    {
+    	RaveInitialize(true); 
+		penv = RaveCreateEnvironment();
+		RaveDestroy();
+		return;
+    }
+
 protected:
 
 	/**
@@ -243,6 +257,8 @@ protected:
 	 */
 	//ADD
 	unsigned number_of_particles;
+
+	EnvironmentBasePtr penv;
 	
 };
 

@@ -7,7 +7,7 @@
 #include "systems/gripper.hpp"
 #include "utilities/random.hpp"
 #include "utilities/convexhull.hpp"
-
+#include <openrave-core.h>
 
 #define _USE_MATH_DEFINES
 
@@ -29,6 +29,7 @@
 #define D_min std::numeric_limits<double>::min()
 #define D_max std::numeric_limits<double>::max()
 
+using namespace OpenRAVE;
 
 
 double gripper_t::distance(double* point1,double* point2)

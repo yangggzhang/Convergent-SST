@@ -21,7 +21,7 @@
 #include "motion_planners/sst.hpp"
 #include "motion_planners/rrt.hpp"
 
-#include <openrave-core.h>
+#include <openrave/openrave.h>
 
 #include <iostream>
 
