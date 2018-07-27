@@ -71,6 +71,8 @@ void sst_t::setup_planning()
 
 	witness_sample->rep = (sst_node_t*)root;
 
+	system->load_openrave();
+
 }
 void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 {

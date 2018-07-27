@@ -34,7 +34,9 @@ public:
 		}
 	}
 
-	virtual ~gripper_t(){}
+	virtual ~gripper_t(){
+		RaveDestroy();
+	}
 
 	virtual double distance(double* point1, double* point2);
 
@@ -60,6 +62,16 @@ public:
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
 
 	std::string export_point(double* state);
+
+	virtual void load_openrave();
+
+protected:
+	EnvironmentBasePtr penv;
+
+	CollisionCheckerBasePtr pchecker;
+
+	RobotBasePtr probot;
+
 };
 
 

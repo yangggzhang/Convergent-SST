@@ -64,6 +64,10 @@ public:
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
 
 	std::string export_point(double* state);
+
+	virtual void load_openrave() {
+		return;
+	};
 };
 
 

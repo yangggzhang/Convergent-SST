@@ -131,6 +131,10 @@ public:
 
 	std::string export_point(double* state);
 
+	virtual void load_openrave(){
+		return;
+	};
+
 protected:
 
 	std::vector<Rectangle_t> obstacles;

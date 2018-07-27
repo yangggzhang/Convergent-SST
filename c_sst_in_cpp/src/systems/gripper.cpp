@@ -16,15 +16,17 @@
 #include <math.h>
 #include <sstream>
 
-#define MIN_X -2
-#define MAX_X 2
+#define MIN_X -4
+#define MAX_X 4
 #define MIN_Y -2
-#define MAX_Y 2
+#define MAX_Y 3
 #define MIN_Z -2
 #define MAX_Z 2
 
 #define MIN_SPEED -0.5
 #define MAX_SPEED 0.5
+
+#define DEPTH_TOLERENCE 0.001
 
 #define D_min std::numeric_limits<double>::min()
 #define D_max std::numeric_limits<double>::max()
@@ -73,12 +75,13 @@ bool gripper_t::propagate( double* start_state, double* control, int min_step, i
 		temp_state[2] += params::integration_step * uz;
 		enforce_bounds(temp_state);
 		validity = validity && valid_state();
-		if (check_collision(temp_state))
-		{
-			temp_state[0] += -params::integration_step * ux;
-			temp_state[1] += -params::integration_step * uy;
-			temp_state[2] += -params::integration_step * uz;
-		}
+		check_collision(temp_state);
+		// if (check_collision(temp_state))
+		// {
+		// 	temp_state[0] += -params::integration_step * ux;
+		// 	temp_state[1] += -params::integration_step * uy;
+		// 	temp_state[2] += -params::integration_step * uz;
+		// }
 	}
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
@@ -124,11 +127,12 @@ bool gripper_t::convergent_propagate( const bool &random_time, double* start_sta
 	for(int i=0;i<num_steps;i++)
 	{		
 
-		// temp_state[0] += params::integration_step * ux;
-		// temp_state[1] += params::integration_step * uy;
-		// temp_state[2] += params::integration_step * uz;
-		// enforce_bounds(temp_state);
-		// validity = validity && valid_state();
+		temp_state[0] += params::integration_step * ux;
+		temp_state[1] += params::integration_step * uy;
+		temp_state[2] += params::integration_step * uz;
+		enforce_bounds(temp_state);
+		validity = validity && valid_state();
+		check_collision(temp_state);
 		// if (check_collision(temp_state))
 		// {
 		// 	temp_state[0] += -params::integration_step * ux;
@@ -143,13 +147,13 @@ bool gripper_t::convergent_propagate( const bool &random_time, double* start_sta
 				temp_particles[j][0] += params::integration_step * ux;
 				temp_particles[j][1] += params::integration_step * uy;
 				temp_particles[j][2] += params::integration_step * uz;				
-				enforce_bounds(temp_particles[j]);
-				if (check_collision(temp_particles[j]))
-				{
-					temp_particles[j][0] += -params::integration_step * ux;
-					temp_particles[j][1] += -params::integration_step * uy;
-					temp_particles[j][2] += -params::integration_step * uz;
-				}
+				check_collision(temp_particles[j]);
+				// if (check_collision(temp_particles[j]))
+				// {
+				// 	temp_particles[j][0] += -params::integration_step * ux;
+				// 	temp_particles[j][1] += -params::integration_step * uy;
+				// 	temp_particles[j][2] += -params::integration_step * uz;
+				// }
 				
 				// local_cost += distance(temp_state, temp_particles[j]) * params::integration_step;
 			}
@@ -158,28 +162,13 @@ bool gripper_t::convergent_propagate( const bool &random_time, double* start_sta
 	}
 
 	double end_De = 0;
-	temp_state[0] = 0; temp_state[1] = 0; temp_state[2] = 0;
 	if (start_particles.size() > 0)
 	{
-		for (size_t j = 0; j < start_particles.size(); j++)
-		{
-			temp_state[0] += temp_particles[j][0];
-			temp_state[1] += temp_particles[j][1];
-			temp_state[2] += temp_particles[j][2];
-		}
-
-		temp_state[0] = temp_state[0]/number_of_particles;
-		temp_state[1] = temp_state[1]/number_of_particles;
-		temp_state[2] = temp_state[2]/number_of_particles;
-
 		for (size_t j = 0; j < start_particles.size(); j++)
 		{
 			end_De += distance(temp_state, temp_particles[j]);
 		}
 	}
-
-	enforce_bounds(temp_state);
-	validity = validity && valid_state();
 
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
@@ -227,13 +216,62 @@ void gripper_t::enforce_bounds(double* state)
 
 bool gripper_t::check_collision(double* state)
 {
-	if (state[0]<1.0 && state[0]>-1.0 && state[1]<1.0 && state[1]>-1.0 && state[2]<0.1 && state[2]>-0.1)
-	{
-		// std::cout << state[0] << " " << state[1] << " " << state[2] << std::endl;
-		return true;
+	// std::cout << "Collision_checking" << std::endl;
+	std::vector<dReal> values;
+	values.resize(state_dimension);
+	for(int i = 0; i < state_dimension; ++i) {
+		values[i] = state[i];
+		// std::cout << values[i] << ", ";
 	}
-	else
-		return false;
+	// std::cout << std::endl;
+	probot->SetActiveDOFValues(values,true);
+
+	// std::vector<dReal> values_temp;
+	// probot->GetActiveDOFValues(values_temp);
+	// for(int i = 0; i < values_temp.size(); ++i) {
+	// 	std::cout<<values_temp[i] <<", ";
+	// }
+	// std::cout << std::cout << std::endl;
+
+	CollisionReportPtr report(new CollisionReport());
+	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+
+	bool obstacle_collision = false;
+	while(penv->CheckCollision(probot,report)){
+		int contactpoints = (int) report->contacts.size();
+		if (contactpoints <= 1) break;
+		double depth_max = -0.0;
+		double normx = 0.0;
+		double normy = 0.0;
+		double normz = 0.0;
+		for (int i = 0; i < contactpoints; ++i){
+			CollisionReport::CONTACT& c = report->contacts[i];
+			// std::cout << "contact " << i << "depth: " << c.depth << std::endl;
+			if(fabs(depth_max) < fabs(c.depth)){
+				depth_max = c.depth;
+				normx = c.norm.x; normy = c.norm.y; normz = c.norm.z;
+			}
+			// std::cout << "contact" << i << ": pos=("
+			// 	<< c.pos.x << ", " << c.pos.y << ", " << c.pos.z << "), norm=("
+			// 	<< c.norm.x << ", " << c.norm.y << ", " << c.norm.z << ")" << std::endl;
+		}
+
+		if (fabs(depth_max) < DEPTH_TOLERENCE) break;
+
+		state[0] += depth_max * normx; state[1] += depth_max * normy; state[2] += depth_max * normz;
+		// std::cout << "depth: " << depth_max << std::endl;
+		// std::cout << "norm: " << normx << ", " << normy << ", " << normz << std::endl;
+		for(int i = 0; i < state_dimension; ++i) {
+			values[i] = state[i];
+			// std::cout << values[i] << ", ";
+		}
+		// std::cout << std::endl;
+		probot->SetActiveDOFValues(values,true);
+
+		obstacle_collision = true;
+	}
+
+	return obstacle_collision;
 }
 
 
@@ -261,4 +299,40 @@ std::string gripper_t::export_point(double* state)
 	std::stringstream s;
 	s << state[0] << "," << state[1] << "," << state[2] << std::endl;
 	return s.str();
+}
+
+void gripper_t::load_openrave() 
+{
+    RaveInitialize(true); 
+	penv = RaveCreateEnvironment();
+
+	pchecker = RaveCreateCollisionChecker(penv,"ode");
+	if( !pchecker ) {
+		RAVELOG_ERROR("failed to create checker\n");
+		return;
+	}
+	penv->SetCollisionChecker(pchecker);
+
+	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys.env.xml")) {
+		std::cout << "gripper.cpp:: Error loading scene.";
+		return;
+	}
+
+	EnvironmentMutex::scoped_lock lock(penv->GetMutex());
+
+	std::vector<RobotBasePtr> vrobots;
+	penv->GetRobots(vrobots);
+	// get the first body
+	if( vrobots.size() == 0 ) {
+		RAVELOG_ERROR("no robots loaded\n");
+		return;
+	}
+	probot = vrobots.at(0);
+	std::vector<int> v;
+	v.clear();
+	probot->SetActiveDOFs(v, DOF_XYZ);
+	std::cout << "Robot's name: " << probot->GetName() << std::endl;
+	std::cout << "Robot's Active DOF: " << probot->GetActiveDOF() << std::endl;
+	
+	return;
 }

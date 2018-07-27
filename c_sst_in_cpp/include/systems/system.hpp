@@ -206,13 +206,7 @@ public:
     	return;
     }
 
-    void load_openrave()
-    {
-    	RaveInitialize(true); 
-		penv = RaveCreateEnvironment();
-		RaveDestroy();
-		return;
-    }
+    virtual void load_openrave() = 0;
 
 protected:
 
@@ -257,8 +251,6 @@ protected:
 	 */
 	//ADD
 	unsigned number_of_particles;
-
-	EnvironmentBasePtr penv;
 	
 };
 
