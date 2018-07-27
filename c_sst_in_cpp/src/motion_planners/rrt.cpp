@@ -123,7 +123,9 @@ void rrt_t::add_point_to_metric(tree_node_t* state)
 
 void rrt_t::random_sample()
 {
-	system->random_state(sample_state);
+	int rand_int = uniform_int_random(0,99);
+	if (rand_int <= 2) system->copy_state_point(sample_state,goal_state);
+	else system->random_state(sample_state);
 	if (number_of_control == 0) system->random_control(sample_control);
 	else 
 	{
