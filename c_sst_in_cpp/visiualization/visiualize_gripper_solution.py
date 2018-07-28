@@ -60,7 +60,7 @@ if __name__ == "__main__":
 			value = map(float, reader.next())
 			print reader.line_num
 			print value
-			if reader.line_num >= 2:
+			if reader.line_num >= 3:
 				handles.pop()
 				if state_dim == 2:
 					value.append(0.0)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 				particle_pos = []
 				clrs = []
 				j = 0
-				while j <= num_particles:
+				while j < num_particles:
 					value = map(float, reader.next())
 					if state_dim == 2:
 						value.append(0.0)
