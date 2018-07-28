@@ -59,6 +59,8 @@ public:
 
 	bool check_collision(double* state);
 
+	double portion_in_collision(double* point1, double* point2);
+
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
 
 	std::string export_point(double* state);
@@ -71,6 +73,8 @@ protected:
 	CollisionCheckerBasePtr pchecker;
 
 	RobotBasePtr probot;
+
+	std::vector<KinBodyPtr> pbodies;
 
 };
 

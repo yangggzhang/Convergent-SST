@@ -118,7 +118,8 @@ bool gripper_t::convergent_propagate( const bool &random_time, double* start_sta
 
 		for (size_t i = 0; i < start_particles.size(); ++i)
 		{
-			init_De += distance(temp_state, temp_particles[i]);
+			double alpha = 1 + 1000*portion_in_collision(temp_state, temp_particles[i]);
+			init_De += alpha * distance(temp_state, temp_particles[i]);
 		}
 	}
 
@@ -166,7 +167,8 @@ bool gripper_t::convergent_propagate( const bool &random_time, double* start_sta
 	{
 		for (size_t j = 0; j < start_particles.size(); j++)
 		{
-			end_De += distance(temp_state, temp_particles[j]);
+			double alpha = 1 + 1000*portion_in_collision(temp_state, temp_particles[j]);
+			end_De += alpha * distance(temp_state, temp_particles[j]);
 		}
 	}
 
@@ -274,6 +276,37 @@ bool gripper_t::check_collision(double* state)
 	return obstacle_collision;
 }
 
+double gripper_t::portion_in_collision(double* point1, double* point2)
+{
+	double total_dist = distance(point1, point2);
+	double colli_dist = 0.;
+	RaveVector<double> RV1(point1[0], point1[1], point1[2]);
+	RaveVector<double> RV2(point2[0], point2[1], point2[2]);
+	geometry::ray<double> ray1(RV1, RV2 - RV1);
+	geometry::ray<double> ray2(RV2, RV1 - RV2);
+	CollisionReportPtr report1(new CollisionReport());
+	CollisionReportPtr report2(new CollisionReport());
+	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+
+	for(int i = 1; i < pbodies.size(); ++i) { //From 1 because 0 is the robot
+		penv->CheckCollision(ray1, pbodies[i], report1);
+		if(report1->contacts.size() == 0) continue;
+		penv->CheckCollision(ray2, pbodies[i], report2);
+		if(report2->contacts.size() == 0) continue; 
+		double contact1[3] = {report1->contacts[0].pos.x, report1->contacts[0].pos.y, report1->contacts[0].pos.z};
+		double contact2[3] = {report2->contacts[0].pos.x, report2->contacts[0].pos.y, report2->contacts[0].pos.z};
+		colli_dist += distance(contact1, contact2);
+	}
+
+	if(colli_dist/total_dist >= 1) std::cout << "Something wrong in portion_in_collision calculation." << std::endl;
+	// if(colli_dist/total_dist > 0 ) {
+	// 	std::cout << "Portion in collision: " <<  colli_dist/total_dist << std::endl;
+	// 	std::cout << point1[0] << ", " << point1[1] << ", " << point1[2] << ", " ;
+	// 	std::cout << point2[0] << ", " << point2[1] << ", " << point2[2] << std::endl;
+	// }
+	return colli_dist/total_dist;
+
+}
 
 bool gripper_t::valid_state()
 {
@@ -328,6 +361,9 @@ void gripper_t::load_openrave()
 		return;
 	}
 	probot = vrobots.at(0);
+
+	penv->GetBodies(pbodies);
+
 	std::vector<int> v;
 	v.clear();
 	probot->SetActiveDOFs(v, DOF_XYZ);
