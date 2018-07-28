@@ -103,7 +103,7 @@ int main(int ac, char* av[])
 		// planner->visualize_tree(params::trial);
 		// planner->visualize_nodes(params::trial);
 		planner->export_solution_path(params::trial);
-		planner->export_nodes(params::trial);
+		// planner->export_nodes(params::trial);
 		// planner->export_tree(params::trial);
 	}
 	else
@@ -137,7 +137,7 @@ int main(int ac, char* av[])
 					// planner->visualize_tree(count);
 					// planner->visualize_nodes(count);
 					planner->export_solution_path(count);
-					planner->export_nodes(count);
+					// planner->export_nodes(count);
 					// planner->export_tree(count);
 					count++;
 				}				
@@ -157,7 +157,7 @@ int main(int ac, char* av[])
 				// planner->visualize_tree(params::trial);
 				// planner->visualize_nodes(params::trial);
 				planner->export_solution_path(params::trial);
-				planner->export_nodes(params::trial);
+				// planner->export_nodes(params::trial);
 				// planner->export_tree(params::trial);
 				break;
 			}

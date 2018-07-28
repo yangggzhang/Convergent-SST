@@ -14,8 +14,10 @@ def waitrobot(robot):
 
 if __name__ == "__main__":
 
+	filename = 'solution_path_gripper_2D_OP_2.csv'
+
 	nodes = []
-	with open('solution_path_gripper_2D_OP_1.csv', 'rb') as csvfile:
+	with open(filename, 'rb') as csvfile:
 		reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 		state_dim = int(reader.next()[0])
 		num_nodes, num_particles = map(int,reader.next())
@@ -53,7 +55,7 @@ if __name__ == "__main__":
 
 		raw_input("Press any key to show the particle distribution...")
 
-	with open('solution_path_gripper_2D_OP_1.csv', 'rb') as csvfile:
+	with open(filename, 'rb') as csvfile:
 		reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 		i = 0
 		while i < num_nodes:
