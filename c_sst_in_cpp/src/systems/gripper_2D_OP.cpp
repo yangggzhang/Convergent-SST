@@ -25,6 +25,7 @@
 #define MAX_SPEED 0.5
 
 #define DEPTH_TOLERENCE 0.001
+#define CLAW_GRIPPER_OFFSET 0.3
 
 #define D_min std::numeric_limits<double>::min()
 #define D_max std::numeric_limits<double>::max()
@@ -207,7 +208,12 @@ bool gripper_2D_OP_t::check_collision(double* state)
 	std::vector<dReal> values;
 	values.resize(state_dimension);
 	for(int i = 0; i < state_dimension; ++i) {
-		values[i] = state[i];
+		if(probot->GetName() == "4Claw-Gripper"){
+			values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+		}
+		else {
+			values[i] = state[i];
+		}
 		// std::cout << values[i] << ", ";
 	}
 	// std::cout << std::endl;
@@ -248,7 +254,12 @@ bool gripper_2D_OP_t::check_collision(double* state)
 		// std::cout << "depth: " << depth_max << std::endl;
 		// std::cout << "norm: " << normx << ", " << normy << ", " << normz << std::endl;
 		for(int i = 0; i < state_dimension; ++i) {
-			values[i] = state[i];
+			if(probot->GetName() == "4Claw-Gripper"){
+				values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+			}
+			else {
+				values[i] = state[i];
+			}
 			// std::cout << values[i] << ", ";
 		}
 		// std::cout << std::endl;
@@ -328,7 +339,7 @@ void gripper_2D_OP_t::load_openrave()
 	}
 	penv->SetCollisionChecker(pchecker);
 
-	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys.env.xml")) {
+	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
 		std::cout << "gripper.cpp:: Error loading scene.";
 		return;
 	}
