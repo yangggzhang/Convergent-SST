@@ -141,8 +141,11 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
 			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
 			temp_particles[j][2] = hill_height(temp_particles[j]);
+			//final_vol = cost_function(temp_state,temp_particles);
+			
 			//local_cost += distance(temp_state,temp_particles[j])*params::integration_step;
 		}
+
 		final_vol = cost_function(temp_state,temp_particles);
 		cost += (init_vol + final_vol)/2.0*params::integration_step;
 		init_vol = final_vol;
