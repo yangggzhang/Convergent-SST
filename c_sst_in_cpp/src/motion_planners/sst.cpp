@@ -34,6 +34,9 @@ void sst_t::setup_planning()
 		control_temp_particles.push_back(system->alloc_state_point());
 	}
 
+
+
+
 	//initialize output candidates
 	candidate_states.resize(number_of_control);
 

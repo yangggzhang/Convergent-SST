@@ -6,6 +6,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+add_definitions(-std=c++11)
 add_definitions(-O3 )
 
 find_package(Boost COMPONENTS program_options REQUIRED)

@@ -15,6 +15,7 @@
 #include <math.h>
 #include <sstream>
 #include <vector>
+#include <thread>
 
 #define MIN_X -1.5
 #define MAX_X 1.5
@@ -85,6 +86,44 @@ bool climb_hill_t::propagate( double* start_state, double* control, int min_step
 	return validity;
 }
 
+void climb_hill_t::thread1_propagate(std::vector<double*> &local_particles,double u,double theta)
+{
+	for (int i = 0; i < local_particles.size(); i++)
+	{
+		double temp_dhdx = hill_gradient_x(local_particles[i]);
+		double temp_dhdy = hill_gradient_y(local_particles[i]);
+
+		double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
+
+			//temp_particles[j][0] += params::integration_step * u  * cos(theta);
+			//temp_particles[j][1] += params::integration_step * u  * sin(theta);
+
+		local_particles[i][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
+		local_particles[i][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+		local_particles[i][2] = hill_height(local_particles[i]);
+	}
+
+}
+
+void climb_hill_t::thread2_propagate(std::vector<double*> &local_particles,double u,double theta)
+{
+	for (int i = 0; i < local_particles.size(); i++)
+	{
+		double temp_dhdx = hill_gradient_x(local_particles[i]);
+		double temp_dhdy = hill_gradient_y(local_particles[i]);
+
+		double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
+
+			//temp_particles[j][0] += params::integration_step * u  * cos(theta);
+			//temp_particles[j][1] += params::integration_step * u  * sin(theta);
+
+		local_particles[i][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
+		local_particles[i][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+		local_particles[i][2] = hill_height(local_particles[i]);
+	}
+
+}
+
 bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_state,std::vector<double*> &start_particles, double* control, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost )
 {	
 //	double init_cost = 0;
@@ -128,23 +167,40 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
 		temp_state[2] = hill_height(temp_state);
 		
-		for (size_t j = 0; j < start_particles.size(); j++)
-		{
-			double temp_dhdx = hill_gradient_x(temp_particles[j]);
-			double temp_dhdy = hill_gradient_y(temp_particles[j]);
+		// for (size_t j = 0; j < start_particles.size(); j++)
+		// {
+		// 	double temp_dhdx = hill_gradient_x(temp_particles[j]);
+		// 	double temp_dhdy = hill_gradient_y(temp_particles[j]);
 
-			double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
+		// 	double temp_delta_h = temp_dhdx * cos(theta) + temp_dhdy * sin(theta);
 
-			//temp_particles[j][0] += params::integration_step * u  * cos(theta);
-			//temp_particles[j][1] += params::integration_step * u  * sin(theta);
+		// 	//temp_particles[j][0] += params::integration_step * u  * cos(theta);
+		// 	//temp_particles[j][1] += params::integration_step * u  * sin(theta);
 
-			temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
-			temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
-			temp_particles[j][2] = hill_height(temp_particles[j]);
-			//final_vol = cost_function(temp_state,temp_particles);
+		// 	temp_particles[j][0] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * cos(theta);
+		// 	temp_particles[j][1] += params::integration_step * u * (-2/M_PI * atan(temp_delta_h) + 1) * sin(theta);
+		// 	temp_particles[j][2] = hill_height(temp_particles[j]);
+		// 	//final_vol = cost_function(temp_state,temp_particles);
 			
-			//local_cost += distance(temp_state,temp_particles[j])*params::integration_step;
-		}
+		// 	//local_cost += distance(temp_state,temp_particles[j])*params::integration_step;
+		// }
+
+	//	for (int j = 0; j < thread1_particles.size(); j++) copy_state_point(thread1_particles[j],temp_particles[j]);
+	//	for (int j = 0; j < thread2_particles.size(); j++) copy_state_point(thread2_particles[j],temp_particles[j + thread1_particles.size()]);
+
+		std::thread task01(&climb_hill_t::thread1_propagate,this,std::ref(temp_particles),u,theta);
+	//	double u1 = u;
+	//	double t1 = theta;
+//		std::thread task02(&climb_hill_t::thread2_propagate,this,std::ref(thread2_particles),u1,t1);
+
+	//	std::thread task02(particle_propagate, temp_particles,mid_point,end_point,u,theta);
+
+		task01.join();
+	//	task02.join();
+
+	//	for (int j = 0; j < thread1_particles.size(); j++) copy_state_point(temp_particles[j], thread1_particles[j]);
+	//	for (int j = 0; j < thread2_particles.size(); j++) copy_state_point(temp_particles[j + thread1_particles.size()],thread2_particles[j]);
+
 
 		final_vol = cost_function(temp_state,temp_particles);
 		cost += (init_vol + final_vol)/2.0*params::integration_step;

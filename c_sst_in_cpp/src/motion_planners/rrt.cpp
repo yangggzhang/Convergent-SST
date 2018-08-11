@@ -307,23 +307,33 @@ void rrt_t::add_to_tree()
 
 	if (system->distance(new_node->point,goal_state) < goal_radius)
 	{
-		last_solution_cost = 0.0;
-		last_solution_path.clear();
-		std::deque<tree_node_t*> path;
-		nearest = new_node;
-		while(nearest->parent!=NULL)
+		// last_solution_cost = 0.0;
+		// last_solution_path.clear();
+		// std::deque<tree_node_t*> path;
+		// nearest = new_node;
+		// while(nearest->parent!=NULL)
+		// {
+		// 	path.push_front(nearest);
+		// 	nearest = nearest->parent;
+		// }
+		// last_solution_path.push_back(root);
+		// for(unsigned i=0;i<path.size();i++)
+		// {
+		// 	last_solution_path.push_back(path[i]);
+		// }
+		// //std::cout<<"Current: "<<last_solution_cost<<", Best: "<<best_solution_cost<<std::endl;
+		// //smooth();
+		// last_solution_cost = new_node->cost;
+
+		std::vector<std::pair<double*,double> > controls;
+		get_solution(controls);
+		last_solution_cost = 0;
+
+		for(unsigned i=0;i<controls.size();i++)
 		{
-			path.push_front(nearest);
-			nearest = nearest->parent;
+			last_solution_cost+=controls[i].second;
 		}
-		last_solution_path.push_back(root);
-		for(unsigned i=0;i<path.size();i++)
-		{
-			last_solution_path.push_back(path[i]);
-		}
-		//std::cout<<"Current: "<<last_solution_cost<<", Best: "<<best_solution_cost<<std::endl;
-		//smooth();
-		last_solution_cost = new_node->cost;
+
 		update_path();
 		restart_planning();
 	}

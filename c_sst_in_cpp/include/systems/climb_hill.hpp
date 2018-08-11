@@ -32,6 +32,16 @@ public:
 		{
 			temp_particles.push_back(new double[state_dimension]); //+1 to store the height
 		}
+
+		int mid_point = number_of_particles/2;
+		for (int i = 0; i < mid_point; i++)
+		{
+			thread1_particles.push_back(new double[state_dimension]);
+		}
+		for (int i = mid_point; i < number_of_particles; i++)
+		{
+			thread2_particles.push_back(new double[state_dimension]);
+		}
 	}
 
 	virtual ~climb_hill_t(){}
@@ -74,6 +84,11 @@ public:
 	double cost_function(double* state, std::vector<double*> particles);
 
 	virtual double go_through_path(std::vector<tree_node_t*> path);
+
+	void thread1_propagate(std::vector<double*> &local_particles, double u, double theta);
+
+	void thread2_propagate(std::vector<double*> &local_particles, double u, double theta);
+
 };
 
 
