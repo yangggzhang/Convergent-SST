@@ -15,6 +15,7 @@
 #include <limits>
 #include <math.h>
 #include <sstream>
+#include <thread>
 
 #define MIN_X -4
 #define MAX_X 4
@@ -77,12 +78,6 @@ bool gripper_t::propagate( double* start_state, double* control, int min_step, i
 		enforce_bounds(temp_state);
 		validity = validity && valid_state();
 		check_collision(temp_state);
-		// if (check_collision(temp_state))
-		// {
-		// 	temp_state[0] += -params::integration_step * ux;
-		// 	temp_state[1] += -params::integration_step * uy;
-		// 	temp_state[2] += -params::integration_step * uz;
-		// }
 	}
 	result_state[0] = temp_state[0];
 	result_state[1] = temp_state[1];
@@ -92,14 +87,48 @@ bool gripper_t::propagate( double* start_state, double* control, int min_step, i
 	return validity;
 }
 
+void gripper_t::thread1_particle_propagate(double* control)
+{
+	double ux = control[0]; double uy = control[1]; double uz = control[2];
+	for (int i = 0; i < thread1_temp_particles.size(); i++)
+	{
+		env_check_collision(thread1_penv, thread1_probot, thread1_temp_particles[i]);
+	}
+}
+
+void gripper_t::thread2_particle_propagate(double* control)
+{
+	double ux = control[0]; double uy = control[1]; double uz = control[2];
+	for (int i = 0; i < thread2_temp_particles.size(); i++)
+	{
+		env_check_collision(thread2_penv, thread2_probot, thread2_temp_particles[i]);
+	}
+}
+
+void gripper_t::thread3_particle_propagate(double* control)
+{
+	double ux = control[0]; double uy = control[1]; double uz = control[2];
+	for (int i = 0; i < thread3_temp_particles.size(); i++)
+	{
+		env_check_collision(thread3_penv, thread3_probot, thread3_temp_particles[i]);
+	}
+}
+
+void gripper_t::thread4_particle_propagate(double* control)
+{
+	double ux = control[0]; double uy = control[1]; double uz = control[2];
+	for (int i = 0; i < thread4_temp_particles.size(); i++)
+	{
+		env_check_collision(thread4_penv, thread4_probot, thread4_temp_particles[i]);
+	}
+}
+
 bool gripper_t::convergent_propagate( const bool &random_time, double* start_state,std::vector<double*> &start_particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost )
 {	
 	double local_cost = 0;
 	temp_state[0] = start_state[0]; temp_state[1] = start_state[1]; temp_state[2] = start_state[2];
 
 	double ux = control[0]; double uy = control[1]; double uz = control[2];
-
-	// std::cout << "ux: " << ux << " uy: " << uy << " uz: " << uz << std::endl;
 
 	int num_steps = 0; // adjust time stamp according to input
 	if (random_time)	num_steps = uniform_int_random(min_step,max_step);
@@ -124,8 +153,26 @@ bool gripper_t::convergent_propagate( const bool &random_time, double* start_sta
 		}
 	}
 
-	//std::cout<<"update state"<<std::endl;
-	//propagate state
+	for (int i = 0; i < thread1_temp_particles.size(); i++) 
+	{
+		copy_state_point(thread1_temp_particles[i],temp_particles[i]);
+	}
+
+	for (int i = 0; i < thread2_temp_particles.size(); i++) 
+	{
+		copy_state_point(thread2_temp_particles[i],temp_particles[i + thread1_temp_particles.size()]);
+	}
+
+	for (int i = 0; i < thread3_temp_particles.size(); i++) 
+	{
+		copy_state_point(thread3_temp_particles[i],temp_particles[i + thread1_temp_particles.size() + thread2_temp_particles.size()]);
+	}
+
+	for (int i = 0; i < thread4_temp_particles.size(); i++) 
+	{
+		copy_state_point(thread4_temp_particles[i],temp_particles[i + thread1_temp_particles.size() + thread2_temp_particles.size() + thread3_temp_particles.size()]);
+	}
+
 	for(int i=0;i<num_steps;i++)
 	{		
 
@@ -135,32 +182,51 @@ bool gripper_t::convergent_propagate( const bool &random_time, double* start_sta
 		enforce_bounds(temp_state);
 		validity = validity && valid_state();
 		check_collision(temp_state);
-		// if (check_collision(temp_state))
+
+		// if (start_particles.size() > 0)
 		// {
-		// 	temp_state[0] += -params::integration_step * ux;
-		// 	temp_state[1] += -params::integration_step * uy;
-		// 	temp_state[2] += -params::integration_step * uz;
+		// 	for (size_t j = 0; j < start_particles.size(); j++)
+		// 	{
+		// 		temp_particles[j][0] += params::integration_step * ux;
+		// 		temp_particles[j][1] += params::integration_step * uy;
+		// 		temp_particles[j][2] += params::integration_step * uz;				
+		// 		check_collision(temp_particles[j]);
+		// 	}
 		// }
 
 		if (start_particles.size() > 0)
 		{
-			for (size_t j = 0; j < start_particles.size(); j++)
-			{
-				temp_particles[j][0] += params::integration_step * ux;
-				temp_particles[j][1] += params::integration_step * uy;
-				temp_particles[j][2] += params::integration_step * uz;				
-				check_collision(temp_particles[j]);
-				// if (check_collision(temp_particles[j]))
-				// {
-				// 	temp_particles[j][0] += -params::integration_step * ux;
-				// 	temp_particles[j][1] += -params::integration_step * uy;
-				// 	temp_particles[j][2] += -params::integration_step * uz;
-				// }
-				
-				// local_cost += distance(temp_state, temp_particles[j]) * params::integration_step;
-			}
+			std::thread task01(&gripper_t::thread1_particle_propagate,this,control);
+			std::thread task02(&gripper_t::thread2_particle_propagate,this,control);
+			std::thread task03(&gripper_t::thread3_particle_propagate,this,control);
+			std::thread task04(&gripper_t::thread4_particle_propagate,this,control);
+
+			task01.join();
+			task02.join();
+			task03.join();
+			task04.join();
 		}
 
+	}
+
+	for (int i = 0; i < thread1_temp_particles.size(); i++) 
+	{
+		copy_state_point(temp_particles[i], thread1_temp_particles[i]);
+	}
+
+	for (int i = 0; i < thread2_temp_particles.size(); i++) 
+	{
+		copy_state_point(temp_particles[i + thread1_temp_particles.size()], thread2_temp_particles[i]);
+	}
+
+	for (int i = 0; i < thread3_temp_particles.size(); i++) 
+	{
+		copy_state_point(temp_particles[i + thread1_temp_particles.size() + thread2_temp_particles.size()], thread3_temp_particles[i]);
+	}
+
+	for (int i = 0; i < thread4_temp_particles.size(); i++) 
+	{
+		copy_state_point(temp_particles[i + thread1_temp_particles.size() + thread2_temp_particles.size() + thread3_temp_particles.size()], thread4_temp_particles[i]);
 	}
 
 	double end_De = 0;
@@ -219,7 +285,6 @@ void gripper_t::enforce_bounds(double* state)
 
 bool gripper_t::check_collision(double* state)
 {
-	// std::cout << "Collision_checking" << std::endl;
 	std::vector<dReal> values;
 	values.resize(state_dimension);
 	for(int i = 0; i < state_dimension; ++i) {
@@ -229,18 +294,9 @@ bool gripper_t::check_collision(double* state)
 		else {
 			values[i] = state[i];
 		}
-		// std::cout << values[i] << ", ";
+	
 	}
-	// std::cout << std::endl;
 	probot->SetActiveDOFValues(values,true);
-
-	// std::vector<dReal> values_temp;
-	// probot->GetActiveDOFValues(values_temp);
-	// for(int i = 0; i < values_temp.size(); ++i) {
-	// 	std::cout<<values_temp[i] <<", ";
-	// }
-	// std::cout << std::cout << std::endl;
-
 	CollisionReportPtr report(new CollisionReport());
 	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
 
@@ -287,6 +343,59 @@ bool gripper_t::check_collision(double* state)
 	return obstacle_collision;
 }
 
+bool gripper_t::env_check_collision(EnvironmentBasePtr local_penv, RobotBasePtr local_probot, double* state)
+{
+	std::vector<dReal> values;
+	values.resize(state_dimension);
+	for(int i = 0; i < state_dimension; ++i) {
+		if(local_probot->GetName() == "4Claw-Gripper"){
+			values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+		}
+		else {
+			values[i] = state[i];
+		}
+	
+	}
+	local_probot->SetActiveDOFValues(values,true);
+	CollisionReportPtr report(new CollisionReport());
+	local_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+
+	bool obstacle_collision = false;
+	while(local_penv->CheckCollision(local_probot,report)){
+		int contactpoints = (int) report->contacts.size();
+		if (contactpoints <= 1) break;
+		double depth_max = -0.0;
+		double normx = 0.0;
+		double normy = 0.0;
+		double normz = 0.0;
+		for (int i = 0; i < contactpoints; ++i){
+			CollisionReport::CONTACT& c = report->contacts[i];
+			if(fabs(depth_max) < fabs(c.depth)){
+				depth_max = c.depth;
+				normx = c.norm.x; normy = c.norm.y; normz = c.norm.z;
+			}
+		}
+
+		if (fabs(depth_max) < DEPTH_TOLERENCE) break;
+
+		state[0] += depth_max * normx; state[1] += depth_max * normy; state[2] += depth_max * normz;
+		for(int i = 0; i < state_dimension; ++i) {
+			if(local_probot->GetName() == "4Claw-Gripper"){
+				values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+			}
+			else {
+				values[i] = state[i];
+			}
+		}
+		local_probot->SetActiveDOFValues(values,true);
+
+		obstacle_collision = true;
+	}
+
+	return obstacle_collision;
+}
+
+
 double gripper_t::portion_in_collision(double* point1, double* point2)
 {
 	double total_dist = distance(point1, point2);
@@ -310,11 +419,7 @@ double gripper_t::portion_in_collision(double* point1, double* point2)
 	}
 
 	if(colli_dist/total_dist >= 1) std::cout << "Something wrong in portion_in_collision calculation." << std::endl;
-	// if(colli_dist/total_dist > 0 ) {
-	// 	std::cout << "Portion in collision: " <<  colli_dist/total_dist << std::endl;
-	// 	std::cout << point1[0] << ", " << point1[1] << ", " << point1[2] << ", " ;
-	// 	std::cout << point2[0] << ", " << point2[1] << ", " << point2[2] << std::endl;
-	// }
+
 	return colli_dist/total_dist;
 
 }
@@ -349,15 +454,69 @@ void gripper_t::load_openrave()
 {
     RaveInitialize(true); 
 	penv = RaveCreateEnvironment();
+	thread1_penv = RaveCreateEnvironment();
+	thread2_penv = RaveCreateEnvironment();
+	thread3_penv = RaveCreateEnvironment();
+	thread4_penv = RaveCreateEnvironment();
 
 	pchecker = RaveCreateCollisionChecker(penv,"ode");
 	if( !pchecker ) {
 		RAVELOG_ERROR("failed to create checker\n");
 		return;
 	}
-	penv->SetCollisionChecker(pchecker);
 
-	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+	thread1_pchecker = RaveCreateCollisionChecker(thread1_penv,"ode");
+	if( !thread1_pchecker ) {
+		RAVELOG_ERROR("failed to create checker\n");
+		return;
+	}
+
+	thread2_pchecker = RaveCreateCollisionChecker(thread2_penv,"ode");
+	if( !thread2_pchecker ) {
+		RAVELOG_ERROR("failed to create checker\n");
+		return;
+	}
+
+	thread3_pchecker = RaveCreateCollisionChecker(thread3_penv,"ode");
+	if( !thread3_pchecker ) {
+		RAVELOG_ERROR("failed to create checker\n");
+		return;
+	}
+
+	thread4_pchecker = RaveCreateCollisionChecker(thread4_penv,"ode");
+	if( !thread4_pchecker ) {
+		RAVELOG_ERROR("failed to create checker\n");
+		return;
+	}
+
+	penv->SetCollisionChecker(pchecker);
+	thread1_penv->SetCollisionChecker(thread1_pchecker);
+	thread2_penv->SetCollisionChecker(thread2_pchecker);
+	thread3_penv->SetCollisionChecker(thread3_pchecker);
+	thread4_penv->SetCollisionChecker(thread4_pchecker);
+
+
+	if(!penv->Load("/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+		std::cout << "gripper.cpp:: Error loading scene.";
+		return;
+	}
+
+	if(!thread1_penv->Load("/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+		std::cout << "gripper.cpp:: Error loading scene.";
+		return;
+	}
+
+	if(!thread2_penv->Load("/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+		std::cout << "gripper.cpp:: Error loading scene.";
+		return;
+	}
+
+	if(!thread3_penv->Load("/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+		std::cout << "gripper.cpp:: Error loading scene.";
+		return;
+	}
+
+	if(!thread4_penv->Load("/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
 		std::cout << "gripper.cpp:: Error loading scene.";
 		return;
 	}
@@ -380,6 +539,80 @@ void gripper_t::load_openrave()
 	probot->SetActiveDOFs(v, DOF_XYZ);
 	std::cout << "Robot's name: " << probot->GetName() << std::endl;
 	std::cout << "Robot's Active DOF: " << probot->GetActiveDOF() << std::endl;
+
+	EnvironmentMutex::scoped_lock thread1_lock(thread1_penv->GetMutex());
+
+	std::vector<RobotBasePtr> thread1_vrobots;
+	thread1_penv->GetRobots(thread1_vrobots);
+	// get the first body
+	if( thread1_vrobots.size() == 0 ) {
+		RAVELOG_ERROR("no robots loaded\n");
+		return;
+	}
+	thread1_probot = thread1_vrobots.at(0);
+
+	thread1_penv->GetBodies(thread1_pbodies);
+
+	v.clear();
+	thread1_probot->SetActiveDOFs(v, DOF_XYZ);
+	std::cout << "Thread1 Robot's name: " << thread1_probot->GetName() << std::endl;
+	std::cout << "Thread1 Robot's Active DOF: " << thread1_probot->GetActiveDOF() << std::endl;
+
+	EnvironmentMutex::scoped_lock thread2_lock(thread2_penv->GetMutex());
+
+	std::vector<RobotBasePtr> thread2_vrobots;
+	thread2_penv->GetRobots(thread2_vrobots);
+	// get the first body
+	if( thread2_vrobots.size() == 0 ) {
+		RAVELOG_ERROR("no robots loaded\n");
+		return;
+	}
+	thread2_probot = thread2_vrobots.at(0);
+
+	thread2_penv->GetBodies(thread2_pbodies);
+
+	v.clear();
+	thread2_probot->SetActiveDOFs(v, DOF_XYZ);
+	std::cout << "Thread2 Robot's name: " << thread2_probot->GetName() << std::endl;
+	std::cout << "Thread2 Robot's Active DOF: " << thread2_probot->GetActiveDOF() << std::endl;
+
+	EnvironmentMutex::scoped_lock thread3_lock(thread3_penv->GetMutex());
+
+	std::vector<RobotBasePtr> thread3_vrobots;
+	thread3_penv->GetRobots(thread3_vrobots);
+	// get the first body
+	if( thread3_vrobots.size() == 0 ) {
+		RAVELOG_ERROR("no robots loaded\n");
+		return;
+	}
+	thread3_probot = thread3_vrobots.at(0);
+
+	thread3_penv->GetBodies(thread3_pbodies);
+
+	v.clear();
+	thread3_probot->SetActiveDOFs(v, DOF_XYZ);
+	std::cout << "Thread3 Robot's name: " << thread3_probot->GetName() << std::endl;
+	std::cout << "Thread3 Robot's Active DOF: " << thread3_probot->GetActiveDOF() << std::endl;
+
+	EnvironmentMutex::scoped_lock thread4_lock(thread4_penv->GetMutex());
+
+	std::vector<RobotBasePtr> thread4_vrobots;
+	thread4_penv->GetRobots(thread4_vrobots);
+	// get the first body
+	if( thread4_vrobots.size() == 0 ) {
+		RAVELOG_ERROR("no robots loaded\n");
+		return;
+	}
+	thread4_probot = thread4_vrobots.at(0);
+
+	thread4_penv->GetBodies(thread4_pbodies);
+
+	v.clear();
+	thread4_probot->SetActiveDOFs(v, DOF_XYZ);
+	std::cout << "Thread4 Robot's name: " << thread4_probot->GetName() << std::endl;
+	std::cout << "Thread4 Robot's Active DOF: " << thread4_probot->GetActiveDOF() << std::endl;
+
+
 	
 	return;
 }

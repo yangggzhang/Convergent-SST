@@ -15,6 +15,7 @@
 #include <limits>
 #include <math.h>
 #include <sstream>
+#include <thread>
 
 #define MIN_X -3
 #define MAX_X 3

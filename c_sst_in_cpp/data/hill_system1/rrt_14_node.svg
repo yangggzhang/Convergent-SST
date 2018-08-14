@@ -1,0 +1,41 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="500px" height="500px" xmlns="http://www.w3.org/2000/svg" version="1.1" >
+	<circle cx="88.6187" cy="394.901" r="2.5" fill="rgb(255,255,255)" />
+	<circle cx="83.3333" cy="416.667" r="2" fill="rgb(255,0,0)" />
+	<circle cx="416.667" cy="83.3333" r="2" fill="rgb(0,255,0)" />
+	<circle cx="83.3333" cy="416.667" r="2" fill="rgb(0,255,0)" />
+	<circle cx="101.884" cy="396.49" r="2" fill="rgb(0,255,0)" />
+	<circle cx="4.46196" cy="406.553" r="2" fill="rgb(0,255,0)" />
+	<circle cx="5.46143" cy="376.47" r="2" fill="rgb(0,255,0)" />
+	<circle cx="27.6556" cy="361.828" r="2" fill="rgb(0,255,0)" />
+	<circle cx="47.0278" cy="339.951" r="2" fill="rgb(0,255,0)" />
+	<circle cx="68.1365" cy="334.128" r="2" fill="rgb(0,255,0)" />
+	<circle cx="59.5148" cy="309.131" r="2" fill="rgb(0,255,0)" />
+	<circle cx="77.9243" cy="291.194" r="2" fill="rgb(0,255,0)" />
+	<circle cx="87.2345" cy="282.7" r="2" fill="rgb(0,255,0)" />
+	<circle cx="119.415" cy="279.406" r="2" fill="rgb(0,255,0)" />
+	<circle cx="117.316" cy="268.36" r="2" fill="rgb(0,255,0)" />
+	<circle cx="129.95" cy="262.066" r="2" fill="rgb(0,255,0)" />
+	<circle cx="143.681" cy="254.388" r="2" fill="rgb(0,255,0)" />
+	<circle cx="198.231" cy="262.85" r="2" fill="rgb(0,255,0)" />
+	<circle cx="208.326" cy="255.159" r="2" fill="rgb(0,255,0)" />
+	<circle cx="237.332" cy="248.394" r="2" fill="rgb(0,255,0)" />
+	<circle cx="258.276" cy="240.784" r="2" fill="rgb(0,255,0)" />
+	<circle cx="257.148" cy="226.95" r="2" fill="rgb(0,255,0)" />
+	<circle cx="276.104" cy="219.511" r="2" fill="rgb(0,255,0)" />
+	<circle cx="280.317" cy="211.303" r="2" fill="rgb(0,255,0)" />
+	<circle cx="295.14" cy="209.434" r="2" fill="rgb(0,255,0)" />
+	<circle cx="299.727" cy="200.029" r="2" fill="rgb(0,255,0)" />
+	<circle cx="319.864" cy="197.084" r="2" fill="rgb(0,255,0)" />
+	<circle cx="320.015" cy="183.296" r="2" fill="rgb(0,255,0)" />
+	<circle cx="331.937" cy="176.777" r="2" fill="rgb(0,255,0)" />
+	<circle cx="350.525" cy="169.13" r="2" fill="rgb(0,255,0)" />
+	<circle cx="357.774" cy="157.256" r="2" fill="rgb(0,255,0)" />
+	<circle cx="374.475" cy="148.962" r="2" fill="rgb(0,255,0)" />
+	<circle cx="385.644" cy="138.092" r="2" fill="rgb(0,255,0)" />
+	<circle cx="399.321" cy="126.177" r="2" fill="rgb(0,255,0)" />
+	<circle cx="389.015" cy="109.295" r="2" fill="rgb(0,255,0)" />
+	<circle cx="409.238" cy="95.1083" r="2" fill="rgb(0,255,0)" />
+	<circle cx="415.013" cy="84.5984" r="2" fill="rgb(0,255,0)" />
+</svg>

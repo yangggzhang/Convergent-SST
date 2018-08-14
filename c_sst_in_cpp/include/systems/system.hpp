@@ -246,6 +246,15 @@ protected:
 	//ADD
 	std::vector<double*> temp_particles;
 
+	std::vector<double*> thread1_temp_particles;
+
+	std::vector<double*> thread2_temp_particles;
+
+	std::vector<double*> thread3_temp_particles;
+
+	std::vector<double*> thread4_temp_particles;
+
+
 	/**
 	 * @brief Number of particles.
 	 */
