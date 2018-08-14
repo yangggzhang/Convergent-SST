@@ -120,10 +120,8 @@ bool gripper_2D_OP_t::convergent_propagate( const bool &random_time, double* sta
 
 	//std::cout<<"update state"<<std::endl;
 	//propagate state
-	omp_set_num_threads(4);
 	for(int i=0;i<num_steps;i++)
 	{		
-
 		temp_state[0] += params::integration_step * ux;
 		temp_state[1] += params::integration_step * uy;
 		enforce_bounds(temp_state);
@@ -139,19 +137,27 @@ bool gripper_2D_OP_t::convergent_propagate( const bool &random_time, double* sta
 
 		if (start_particles.size() > 0)
 		{
-			for (size_t j = 0; j < start_particles.size(); j++)
+			#pragma omp parallel
 			{
-				temp_particles[j][0] += params::integration_step * ux;
-				temp_particles[j][1] += params::integration_step * uy;
-				check_collision(temp_particles[j]);
-				// if (check_collision(temp_particles[j]))
-				// {
-				// 	temp_particles[j][0] += -params::integration_step * ux;
-				// 	temp_particles[j][1] += -params::integration_step * uy;
-				// 	temp_particles[j][2] += -params::integration_step * uz;
-				// }
-				
-				// local_cost += distance(temp_state, temp_particles[j]) * params::integration_step;
+				int ID = omp_get_thread_num();
+				#pragma omp for schedule(auto)
+				for (size_t j = 0; j < start_particles.size(); j++)
+				{
+					// printf("j: %d, ID: %d\n", j, ID);
+					temp_particles[j][0] += params::integration_step * ux;
+					temp_particles[j][1] += params::integration_step * uy;
+					if(num_threads >= 1) check_collision_parallel(temp_particles[j], ID);
+					else check_collision(temp_particles[j]);
+					// check_collision(temp_particles[j]);
+					// if (check_collision(temp_particles[j]))
+					// {
+					// 	temp_particles[j][0] += -params::integration_step * ux;
+					// 	temp_particles[j][1] += -params::integration_step * uy;
+					// 	temp_particles[j][2] += -params::integration_step * uz;
+					// }
+					
+					// local_cost += distance(temp_state, temp_particles[j]) * params::integration_step;
+				}
 			}
 		}
 
@@ -273,6 +279,75 @@ bool gripper_2D_OP_t::check_collision(double* state)
 	return obstacle_collision;
 }
 
+bool gripper_2D_OP_t::check_collision_parallel(double* state, int ID)
+{
+	// std::cout << "Collision_checking" << std::endl;
+	std::vector<dReal> values;
+	values.resize(state_dimension);
+	for(int i = 0; i < state_dimension; ++i) {
+		if(clone_probot[ID]->GetName() == "4Claw-Gripper"){
+			values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+		}
+		else {
+			values[i] = state[i];
+		}
+		// std::cout << values[i] << ", ";
+	}
+	// std::cout << std::endl;
+	clone_probot[ID]->SetActiveDOFValues(values,true);
+
+	// std::vector<dReal> values_temp;
+	// probot->GetActiveDOFValues(values_temp);
+	// for(int i = 0; i < values_temp.size(); ++i) {
+	// 	std::cout<< values_temp[i] <<", ";
+	// }
+	// std::cout << std::endl;
+
+	CollisionReportPtr report(new CollisionReport());
+	clone_penv[ID]->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+
+	bool obstacle_collision = false;
+	while(clone_penv[ID]->CheckCollision(clone_probot[ID],report)){
+		int contactpoints = (int) report->contacts.size();
+		if (contactpoints <= 1) break;
+		double depth_max = -0.0;
+		double normx = 0.0;
+		double normy = 0.0;
+		for (int i = 0; i < contactpoints; ++i){
+			CollisionReport::CONTACT& c = report->contacts[i];
+			// std::cout << "contact " << i << "depth: " << c.depth << std::endl;
+			if(fabs(depth_max) < fabs(c.depth)){
+				depth_max = c.depth;
+				normx = c.norm.x; normy = c.norm.y;
+			}
+			// std::cout << "contact" << i << ": pos=("
+			// 	<< c.pos.x << ", " << c.pos.y << ", " << c.pos.z << "), norm=("
+			// 	<< c.norm.x << ", " << c.norm.y << ", " << c.norm.z << ")" << std::endl;
+		}
+
+		if (fabs(depth_max) < DEPTH_TOLERENCE) break;
+
+		state[0] += depth_max * normx; state[1] += depth_max * normy;
+		// std::cout << "depth: " << depth_max << std::endl;
+		// std::cout << "norm: " << normx << ", " << normy << ", " << normz << std::endl;
+		for(int i = 0; i < state_dimension; ++i) {
+			if(clone_probot[ID]->GetName() == "4Claw-Gripper"){
+				values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+			}
+			else {
+				values[i] = state[i];
+			}
+			// std::cout << values[i] << ", ";
+		}
+		// std::cout << std::endl;
+		clone_probot[ID]->SetActiveDOFValues(values,true);
+
+		obstacle_collision = true;
+	}
+
+	return obstacle_collision;
+}
+
 double gripper_2D_OP_t::portion_in_collision(double* point1, double* point2)
 {
 	double total_dist = distance(point1, point2);
@@ -364,6 +439,24 @@ void gripper_2D_OP_t::load_openrave()
 	probot->SetActiveDOFs(v, DOF_X | DOF_Y);
 	std::cout << "Robot's name: " << probot->GetName() << std::endl;
 	std::cout << "Robot's Active DOF: " << probot->GetActiveDOF() << std::endl;
+
+	// Setup thread
+	if(num_threads >= 1) {
+		std::cout << "Number of thread: " << num_threads << std::endl;
+		clone_penv.clear();
+		clone_probot.clear();
+		clone_penv.resize(num_threads);
+		clone_probot.resize(num_threads);
+
+		for (int i = 0; i < num_threads; ++i)
+		{
+			clone_penv[i] = penv->CloneSelf(Clone_Bodies);
+			clone_penv[i]->GetRobots(vrobots);
+			clone_probot[i] = vrobots.at(0);
+			clone_probot[i]->SetActiveDOFs(v, DOF_X | DOF_Y);
+			// std::cout << i << ", " << clone_probot[i]->GetName() << ", " << clone_probot[i]->GetActiveDOF() << std::endl;
+		}
+	}
 	
 	return;
 }

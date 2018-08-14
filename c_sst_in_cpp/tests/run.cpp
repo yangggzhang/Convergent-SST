@@ -25,9 +25,13 @@
 #include <openrave/openrave.h>
 
 #include <iostream>
+#include "omp.h"
+
+#define NUM_THREADS 0
 
 int main(int ac, char* av[])
 {
+	omp_set_num_threads(NUM_THREADS);
 	read_parameters(ac,av);
 	//****************After reading in from input, we need to instantiate classes
 	init_random(time(NULL));
@@ -50,7 +54,7 @@ int main(int ac, char* av[])
 	else if(params::system=="gripper_2D_OP")
 	{
 		if(params::number_of_particles ==0) system = new gripper_2D_OP_t();
-		else system = new gripper_2D_OP_t(params::number_of_particles);
+		else system = new gripper_2D_OP_t(params::number_of_particles, NUM_THREADS);
 	}
 
 
