@@ -90,7 +90,7 @@ if __name__ == "__main__":
 				robot.SetActiveDOFValues(node_pos)
 				#Plot particle position
 				handles.append(env.plot3(points=array(particle_pos),
-							pointsize=0.02,
+							pointsize=0.05,
 							colors=array(clrs),
 							drawstyle=1))
 				raw_input("Press any key to show the particle distribution...")

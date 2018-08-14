@@ -15,6 +15,7 @@
 #include <limits>
 #include <math.h>
 #include <sstream>
+#include <omp.h>
 
 #define MIN_X -4
 #define MAX_X 4
@@ -119,6 +120,7 @@ bool gripper_2D_OP_t::convergent_propagate( const bool &random_time, double* sta
 
 	//std::cout<<"update state"<<std::endl;
 	//propagate state
+	omp_set_num_threads(4);
 	for(int i=0;i<num_steps;i++)
 	{		
 
