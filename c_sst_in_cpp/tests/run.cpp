@@ -45,7 +45,7 @@ int main(int ac, char* av[])
 	penv->SetCollisionChecker(pchecker);
 	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
 
-	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_puma.env.xml")) {
+	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
 		std::cout << "gripper.cpp:: Error loading scene.";
 		return 0;
 	}
@@ -69,13 +69,13 @@ int main(int ac, char* av[])
 
 	// EnvironmentBasePtr clone_penv = penv->CloneSelf(Clone_Bodies);
 	EnvironmentBasePtr clone_penv = RaveCreateEnvironment();
-	CollisionCheckerBasePtr clone_pchecker = RaveCreateCollisionChecker(clone_penv,"ode");
-	if( !clone_pchecker ) {
-		RAVELOG_ERROR("failed to create checker\n");
-		return 0;
-	}
-	clone_penv->SetCollisionChecker(clone_pchecker);
-	clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+	// CollisionCheckerBasePtr clone_pchecker = RaveCreateCollisionChecker(clone_penv,"ode");
+	// if( !clone_pchecker ) {
+	// 	RAVELOG_ERROR("failed to create checker\n");
+	// 	return 0;
+	// }
+	// clone_penv->SetCollisionChecker(clone_pchecker);
+	// clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
 
 	if(!clone_penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
 		std::cout << "gripper.cpp:: Error loading scene.";
@@ -113,7 +113,7 @@ int main(int ac, char* av[])
 		// printf("Num Threads:%d\n ",omp_get_num_threads());
 		int ID = omp_get_thread_num();
 		#pragma omp for schedule(auto)
-		for (size_t j = 0; j < 1000000; j++)
+		for (size_t j = 0; j < 10000; j++)
 		{
 			// printf("j: %d, ID: %d\n", j, ID);
 			// temp_particles[j][0] += params::integration_step * ux;
@@ -134,7 +134,7 @@ int main(int ac, char* av[])
 
 	start_time = omp_get_wtime();
 
-	for (size_t j = 0; j < 1000000; j++)
+	for (size_t j = 0; j < 10000; j++)
 	{
 		check_collision_parallel(temp_particles[j], 0, clone_penv, clone_probot);
 	}
@@ -319,10 +319,10 @@ bool check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_pen
 	CollisionReportPtr report(new CollisionReport());
 
 	bool obstacle_collision = false;
-	#pragma omp critical
-	{
+	// #pragma omp critical
+	// {
 	temp_penv->CheckCollision(temp_probot, report);
-	}
+	// }
 	// if(ID == 0) penv->CheckCollision(probot);
 	// else clone_penv->CheckCollision(clone_probot);
 	// while(clone_penv[ID]->CheckCollision(clone_probot[ID],report)){
