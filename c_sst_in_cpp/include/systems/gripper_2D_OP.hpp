@@ -74,13 +74,19 @@ public:
 protected:
 	EnvironmentBasePtr penv;
 
-	std::vector<EnvironmentBasePtr> clone_penv;
+	// std::vector<EnvironmentBasePtr> clone_penv;
+
+	EnvironmentBasePtr clone_penv;
 
 	CollisionCheckerBasePtr pchecker;
 
+	CollisionCheckerBasePtr clone_pchecker;
+
 	RobotBasePtr probot;
 
-	std::vector<RobotBasePtr> clone_probot;
+	RobotBasePtr clone_probot;
+
+	// std::vector<RobotBasePtr> clone_probot;
 
 	std::vector<KinBodyPtr> pbodies;
 

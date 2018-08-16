@@ -14,7 +14,7 @@ def waitrobot(robot):
 
 if __name__ == "__main__":
 
-	filename = 'solution_path_gripper_2D_OP_3.csv'
+	filename = 'solution_path_2threads.csv'
 
 	nodes = []
 	with open(filename, 'rb') as csvfile:
