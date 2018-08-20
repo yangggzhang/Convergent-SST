@@ -14,7 +14,7 @@ def waitrobot(robot):
 
 if __name__ == "__main__":
 
-	filename = 'solution_path_2threads.csv'
+	filename = 'solution_path_gripper_2D_OP_4.csv'
 
 	nodes = []
 	with open(filename, 'rb') as csvfile:
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
 		env.Reset()
 		# load a scene from ProjectRoom environment XML file
-		env.Load('../OpenraveEnv/gripper_sys_4claw.env.xml')
+		env.Load('../OpenraveEnv/gripper_sys_4claw_simplified.env.xml')
 		time.sleep(0.1)
 
 		raw_input("Press any key to show the solution path...")

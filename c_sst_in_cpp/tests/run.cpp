@@ -28,160 +28,15 @@
 #include "omp.h"
 #include <ode/ode.h>
 
-#define NUM_THREADS 2
+#define NUM_THREADS 1
 
 bool check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_penv, RobotBasePtr temp_probot);
 
 int main(int ac, char* av[])
 {
 
-	RaveInitialize(true); 
-	EnvironmentBasePtr penv = RaveCreateEnvironment();
-
-	CollisionCheckerBasePtr pchecker = RaveCreateCollisionChecker(penv,"ode");
-	if( !pchecker ) {
-		RAVELOG_ERROR("failed to create checker\n");
-		return 0;
-	}
-	penv->SetCollisionChecker(pchecker);
-	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
-
-	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
-		std::cout << "gripper.cpp:: Error loading scene.";
-		return 0;
-	}
-
-	// EnvironmentMutex::scoped_lock lock(penv->GetMutex());
-
-	std::vector<RobotBasePtr> vrobots;
-	penv->GetRobots(vrobots);
-	// get the first body
-	if( vrobots.size() == 0 ) {
-		RAVELOG_ERROR("no robots loaded\n");
-		return 0;
-	}
-	RobotBasePtr probot = vrobots.at(0);
-
-	std::vector<int> v;
-	v.clear();
-	probot->SetActiveDOFs(v, DOF_X | DOF_Y);
-	std::cout << "Robot's name: " << probot->GetName() << std::endl;
-	std::cout << "Robot's Active DOF: " << probot->GetActiveDOF() << std::endl;
-
-	// std::vector<EnvironmentBasePtr> clone_penv;
-	// clone_penv.clear();
-	// clone_penv.resize(NUM_THREADS-1);
-	// for (int i = 0; i < NUM_THREADS-1; ++i)
-	// {
-	// 	clone_penv[i] = penv->CloneSelf(Clone_Bodies);
-	// }
-	EnvironmentBasePtr clone_penv = penv->CloneSelf(Clone_Bodies);
 	// RaveInitialize(true); 
-	// EnvironmentBasePtr clone_penv = RaveCreateEnvironment();
-	// CollisionCheckerBasePtr clone_pchecker = RaveCreateCollisionChecker(clone_penv,"ode");
-	// if( !clone_pchecker ) {
-		// RAVELOG_ERROR("failed to create checker\n");
-		// return 0;
-	// }
-	// clone_penv->SetCollisionChecker(clone_pchecker);
-	// clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
-
-	// if(!clone_penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
-	// 	std::cout << "gripper.cpp:: Error loading scene.";
-	// 	return 0;
-	// }
-
-	// EnvironmentMutex::scoped_lock clone_lock(clone_penv->GetMutex());
-	
-	vrobots.clear();
-	clone_penv->GetRobots(vrobots);
-	if( vrobots.size() == 0 ) {
-		RAVELOG_ERROR("no robots loaded\n");
-		return 0;
-	}
-	RobotBasePtr clone_probot = vrobots.at(0);
-
-	clone_probot->SetActiveDOFs(v, DOF_X | DOF_Y);
-	std::cout << "Robot's name: " << clone_probot->GetName() << std::endl;
-	std::cout << "Robot's Active DOF: " << clone_probot->GetActiveDOF() << std::endl;
-	// std::vector<RobotBasePtr> clone_probot;
-	// clone_probot.clear();
-	// clone_probot.resize(NUM_THREADS-1);
-
-	// for(int i =0; i < NUM_THREADS-1; i++)
-	// {
-	// 	vrobots.clear();
-	// 	clone_penv[i]->GetRobots(vrobots);
-	// 	// get the first body
-	// 	if( vrobots.size() == 0 ) {
-	// 		RAVELOG_ERROR("no robots loaded\n");
-	// 		return 0;
-	// 	}
-	// 	clone_probot[i] = vrobots.at(0);
-
-	// 	clone_probot[i]->SetActiveDOFs(v, DOF_X | DOF_Y);
-	// 	std::cout << "Robot's name: " << clone_probot[i]->GetName() << std::endl;
-	// 	std::cout << "Robot's Active DOF: " << clone_probot[i]->GetActiveDOF() << std::endl;
-	// }
-
-	std::vector<double*> temp_particles;
-	temp_particles.clear();
-	for (int i = 0; i < 1000; ++i)
-	{
-		temp_particles.push_back(new double[2]); //+1 to store the height
-	}
-
-	omp_set_num_threads(NUM_THREADS);
-	double start_time = omp_get_wtime();
-	// printf("%d\n",omp_get_max_threads());
-	// printf("Num Threads:%d\n ",omp_get_num_threads());
-	std::cout << "Static cast: " << penv->GetCollisionChecker()->GetInterfaceTypeStatic() << std::endl;
-	std::cout << "Static cast: " << clone_penv->GetCollisionChecker()->GetInterfaceTypeStatic() << std::endl;
-	// std::cout << "Static cast: " << penv->GetInterfaceTypeStatic() << std::endl;
-	// std::cout << "Static cast: " << clone_penv->GetInterfaceTypeStatic() << std::endl;
-	#pragma omp parallel
-	{
-		// printf("Num Threads:%d\n ",omp_get_num_threads());
-		int ID = omp_get_thread_num();
-		// dInitODE2(0);
-		// dAllocateODEDataForThread(0);
-		// CollisionCheckerBasePtr pchecker;
-		// if (ID == 0) pchecker = RaveCreateCollisionChecker(penv,"ode");
-		// else pchecker = RaveCreateCollisionChecker(clone_penv, "ode");
-
-		// if( !pchecker ) {
-		// 	RAVELOG_ERROR("failed to create checker\n");
-		// }
-		// if (ID == 0) {
-		// 	penv->SetCollisionChecker(pchecker);
-		// 	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
-		// }
-		// else {
-		// 	clone_penv->SetCollisionChecker(pchecker);
-		// 	clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
-		// }
-		#pragma omp for schedule(auto)
-		for (size_t j = 0; j < 1000; j++)
-		{
-			// printf("j: %d, ID: %d\n", j, ID);
-			// temp_particles[j][0] += params::integration_step * ux;
-			// temp_particles[j][1] += params::integration_step * uy;
-			if(ID == 0) 
-				{
-					// printf("One\n");
-					check_collision_parallel(temp_particles[j], ID, penv, probot);
-				}
-			else {
-				// printf("Two\n");
-				// check_collision_parallel(temp_particles[j], ID, clone_penv[ID-1], clone_probot[ID-1]);
-				check_collision_parallel(temp_particles[j], ID, clone_penv, clone_probot);
-			}
-		}
-	}
-	double end_time = omp_get_wtime();
-	std::cout << "Parallel with " << NUM_THREADS << " threads: " << end_time - start_time << std::endl;
-
-	start_time = omp_get_wtime();
+	// EnvironmentBasePtr penv = RaveCreateEnvironment();
 
 	// CollisionCheckerBasePtr pchecker = RaveCreateCollisionChecker(penv,"ode");
 	// if( !pchecker ) {
@@ -190,17 +45,163 @@ int main(int ac, char* av[])
 	// }
 	// penv->SetCollisionChecker(pchecker);
 	// penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
-	for (size_t j = 0; j < 1000; j++)
-	{
-		check_collision_parallel(temp_particles[j], 0, penv, probot);
-	}
 
-	end_time = omp_get_wtime();
-	std::cout << "Serial computation: " << end_time - start_time << std::endl;
+	// if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+	// 	std::cout << "gripper.cpp:: Error loading scene.";
+	// 	return 0;
+	// }
 
-	return 0;
+	// // EnvironmentMutex::scoped_lock lock(penv->GetMutex());
+
+	// std::vector<RobotBasePtr> vrobots;
+	// penv->GetRobots(vrobots);
+	// // get the first body
+	// if( vrobots.size() == 0 ) {
+	// 	RAVELOG_ERROR("no robots loaded\n");
+	// 	return 0;
+	// }
+	// RobotBasePtr probot = vrobots.at(0);
+
+	// std::vector<int> v;
+	// v.clear();
+	// probot->SetActiveDOFs(v, DOF_X | DOF_Y);
+	// std::cout << "Robot's name: " << probot->GetName() << std::endl;
+	// std::cout << "Robot's Active DOF: " << probot->GetActiveDOF() << std::endl;
+
+	// // std::vector<EnvironmentBasePtr> clone_penv;
+	// // clone_penv.clear();
+	// // clone_penv.resize(NUM_THREADS-1);
+	// // for (int i = 0; i < NUM_THREADS-1; ++i)
+	// // {
+	// // 	clone_penv[i] = penv->CloneSelf(Clone_Bodies);
+	// // }
+	// EnvironmentBasePtr clone_penv = penv->CloneSelf(Clone_Bodies);
+	// // RaveInitialize(true); 
+	// // EnvironmentBasePtr clone_penv = RaveCreateEnvironment();
+	// // CollisionCheckerBasePtr clone_pchecker = RaveCreateCollisionChecker(clone_penv,"ode");
+	// // if( !clone_pchecker ) {
+	// 	// RAVELOG_ERROR("failed to create checker\n");
+	// 	// return 0;
+	// // }
+	// // clone_penv->SetCollisionChecker(clone_pchecker);
+	// // clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+
+	// // if(!clone_penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+	// // 	std::cout << "gripper.cpp:: Error loading scene.";
+	// // 	return 0;
+	// // }
+
+	// // EnvironmentMutex::scoped_lock clone_lock(clone_penv->GetMutex());
+	
+	// vrobots.clear();
+	// clone_penv->GetRobots(vrobots);
+	// if( vrobots.size() == 0 ) {
+	// 	RAVELOG_ERROR("no robots loaded\n");
+	// 	return 0;
+	// }
+	// RobotBasePtr clone_probot = vrobots.at(0);
+
+	// clone_probot->SetActiveDOFs(v, DOF_X | DOF_Y);
+	// std::cout << "Robot's name: " << clone_probot->GetName() << std::endl;
+	// std::cout << "Robot's Active DOF: " << clone_probot->GetActiveDOF() << std::endl;
+	// // std::vector<RobotBasePtr> clone_probot;
+	// // clone_probot.clear();
+	// // clone_probot.resize(NUM_THREADS-1);
+
+	// // for(int i =0; i < NUM_THREADS-1; i++)
+	// // {
+	// // 	vrobots.clear();
+	// // 	clone_penv[i]->GetRobots(vrobots);
+	// // 	// get the first body
+	// // 	if( vrobots.size() == 0 ) {
+	// // 		RAVELOG_ERROR("no robots loaded\n");
+	// // 		return 0;
+	// // 	}
+	// // 	clone_probot[i] = vrobots.at(0);
+
+	// // 	clone_probot[i]->SetActiveDOFs(v, DOF_X | DOF_Y);
+	// // 	std::cout << "Robot's name: " << clone_probot[i]->GetName() << std::endl;
+	// // 	std::cout << "Robot's Active DOF: " << clone_probot[i]->GetActiveDOF() << std::endl;
+	// // }
+
+	// std::vector<double*> temp_particles;
+	// temp_particles.clear();
+	// for (int i = 0; i < 1000; ++i)
+	// {
+	// 	temp_particles.push_back(new double[2]); //+1 to store the height
+	// }
+
+	// omp_set_num_threads(NUM_THREADS);
+	// double start_time = omp_get_wtime();
+	// // printf("%d\n",omp_get_max_threads());
+	// // printf("Num Threads:%d\n ",omp_get_num_threads());
+	// std::cout << "Static cast: " << penv->GetCollisionChecker()->GetInterfaceTypeStatic() << std::endl;
+	// std::cout << "Static cast: " << clone_penv->GetCollisionChecker()->GetInterfaceTypeStatic() << std::endl;
+	// // std::cout << "Static cast: " << penv->GetInterfaceTypeStatic() << std::endl;
+	// // std::cout << "Static cast: " << clone_penv->GetInterfaceTypeStatic() << std::endl;
+	// #pragma omp parallel
+	// {
+	// 	// printf("Num Threads:%d\n ",omp_get_num_threads());
+	// 	int ID = omp_get_thread_num();
+	// 	// dInitODE2(0);
+	// 	// dAllocateODEDataForThread(0);
+	// 	// CollisionCheckerBasePtr pchecker;
+	// 	// if (ID == 0) pchecker = RaveCreateCollisionChecker(penv,"ode");
+	// 	// else pchecker = RaveCreateCollisionChecker(clone_penv, "ode");
+
+	// 	// if( !pchecker ) {
+	// 	// 	RAVELOG_ERROR("failed to create checker\n");
+	// 	// }
+	// 	// if (ID == 0) {
+	// 	// 	penv->SetCollisionChecker(pchecker);
+	// 	// 	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+	// 	// }
+	// 	// else {
+	// 	// 	clone_penv->SetCollisionChecker(pchecker);
+	// 	// 	clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+	// 	// }
+	// 	#pragma omp for schedule(auto)
+	// 	for (size_t j = 0; j < 1000; j++)
+	// 	{
+	// 		// printf("j: %d, ID: %d\n", j, ID);
+	// 		// temp_particles[j][0] += params::integration_step * ux;
+	// 		// temp_particles[j][1] += params::integration_step * uy;
+	// 		if(ID == 0) 
+	// 			{
+	// 				// printf("One\n");
+	// 				check_collision_parallel(temp_particles[j], ID, penv, probot);
+	// 			}
+	// 		else {
+	// 			// printf("Two\n");
+	// 			// check_collision_parallel(temp_particles[j], ID, clone_penv[ID-1], clone_probot[ID-1]);
+	// 			check_collision_parallel(temp_particles[j], ID, clone_penv, clone_probot);
+	// 		}
+	// 	}
+	// }
+	// double end_time = omp_get_wtime();
+	// std::cout << "Parallel with " << NUM_THREADS << " threads: " << end_time - start_time << std::endl;
+
+	// start_time = omp_get_wtime();
+
+	// // CollisionCheckerBasePtr pchecker = RaveCreateCollisionChecker(penv,"ode");
+	// // if( !pchecker ) {
+	// // 	RAVELOG_ERROR("failed to create checker\n");
+	// // 	return 0;
+	// // }
+	// // penv->SetCollisionChecker(pchecker);
+	// // penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+	// for (size_t j = 0; j < 1000; j++)
+	// {
+	// 	check_collision_parallel(temp_particles[j], 0, penv, probot);
+	// }
+
+	// end_time = omp_get_wtime();
+	// std::cout << "Serial computation: " << end_time - start_time << std::endl;
+
+	// return 0;
 
 	/////////////////////////////////////////////////////////////////////////////////
+	omp_set_num_threads(NUM_THREADS);
 	read_parameters(ac,av);
 	//****************After reading in from input, we need to instantiate classes
 	init_random(time(NULL));

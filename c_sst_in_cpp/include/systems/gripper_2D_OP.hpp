@@ -61,7 +61,7 @@ public:
 
 	bool check_collision(double* state);
 
-	bool check_collision_parallel(double* state, int ID);
+	bool check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_penv, RobotBasePtr temp_probot);
 
 	double portion_in_collision(double* point1, double* point2);
 
@@ -74,19 +74,19 @@ public:
 protected:
 	EnvironmentBasePtr penv;
 
-	// std::vector<EnvironmentBasePtr> clone_penv;
+	std::vector<EnvironmentBasePtr> clone_penv;
 
-	EnvironmentBasePtr clone_penv;
+	// EnvironmentBasePtr clone_penv;
 
 	CollisionCheckerBasePtr pchecker;
 
-	CollisionCheckerBasePtr clone_pchecker;
+	// CollisionCheckerBasePtr clone_pchecker;
 
 	RobotBasePtr probot;
 
-	RobotBasePtr clone_probot;
+	// RobotBasePtr clone_probot;
 
-	// std::vector<RobotBasePtr> clone_probot;
+	std::vector<RobotBasePtr> clone_probot;
 
 	std::vector<KinBodyPtr> pbodies;
 

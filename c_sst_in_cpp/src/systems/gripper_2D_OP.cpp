@@ -151,9 +151,12 @@ bool gripper_2D_OP_t::convergent_propagate( const bool &random_time, double* sta
 				for (size_t j = 0; j < start_particles.size(); j++)
 				{
 					// printf("j: %d, ID: %d\n", j, ID);
-					// temp_particles[j][0] += params::integration_step * ux;
-					// temp_particles[j][1] += params::integration_step * uy;
-					if(num_threads >= 1) check_collision_parallel(temp_particles[j], ID);
+					temp_particles[j][0] += params::integration_step * ux;
+					temp_particles[j][1] += params::integration_step * uy;
+					if(num_threads >= 1) {
+						if (ID == 0) check_collision_parallel(temp_particles[j], ID, penv, probot);
+						else check_collision_parallel(temp_particles[j], ID, clone_penv[ID-1], clone_probot[ID-1]);
+					}
 					else check_collision(temp_particles[j]);
 					// check_collision_parallel(temp_particles[j], 0);
 					// if (check_collision(temp_particles[j]))
@@ -288,42 +291,21 @@ bool gripper_2D_OP_t::check_collision(double* state)
 	return obstacle_collision;
 }
 
-// bool gripper_2D_OP_t::check_collision_parallel(double* state, int ID)
-// {
-// 	double sum = 0;
-// 	for (int i = 0; i < 1000; ++i)
-// 	{
-// 		sum+=exp(i);
-// 	}
-// 	return false;
-// }
-
-bool gripper_2D_OP_t::check_collision_parallel(double* state, int ID)
+bool gripper_2D_OP_t::check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_penv, RobotBasePtr temp_probot)
 {
 	// std::cout << "Collision_checking" << std::endl;
 	// std::cout << ID << std::endl;
 	std::vector<dReal> values;
 	values.resize(state_dimension);
 	for(int i = 0; i < state_dimension; ++i) {
-		// if(clone_probot[ID]->GetName() == "4Claw-Gripper"){
-			// values[i] = state[i] - CLAW_GRIPPER_OFFSET;
-		// }
-		// else {
-			values[i] = -1;
-			// values[i] = state[i];
-		// }
+		if(temp_probot->GetName() == "4Claw-Gripper"){
+			values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+		}
+		else {
+			// values[i] = -1;
+			values[i] = state[i];
+		}
 		// std::cout << values[i] << ", ";
-	}
-
-	EnvironmentBasePtr temp_penv;
-	RobotBasePtr temp_probot;
-	if (ID == 0) {
-		temp_penv = penv;
-		temp_probot = probot;
-	}
-	else {
-		temp_penv = clone_penv;
-		temp_probot = clone_probot;
 	}
 
 	EnvironmentMutex::scoped_lock lock(temp_penv->GetMutex());
@@ -342,49 +324,46 @@ bool gripper_2D_OP_t::check_collision_parallel(double* state, int ID)
 	CollisionReportPtr report(new CollisionReport());
 
 	bool obstacle_collision = false;
-	temp_penv->CheckCollision(temp_probot);
+	// temp_penv->CheckCollision(temp_probot, report);
+	while(temp_penv->CheckCollision(temp_probot,report)){
+		int contactpoints = (int) report->contacts.size();
+		if (contactpoints <= 1) break;
+		double depth_max = -0.0;
+		double normx = 0.0;
+		double normy = 0.0;
+		for (int i = 0; i < contactpoints; ++i){
+			CollisionReport::CONTACT& c = report->contacts[i];
+			// std::cout << "contact " << i << "depth: " << c.depth << std::endl;
+			if(fabs(depth_max) < fabs(c.depth)){
+				depth_max = c.depth;
+				normx = c.norm.x; normy = c.norm.y;
+			}
+			// std::cout << "contact" << i << ": pos=("
+			// 	<< c.pos.x << ", " << c.pos.y << ", " << c.pos.z << "), norm=("
+			// 	<< c.norm.x << ", " << c.norm.y << ", " << c.norm.z << ")" << std::endl;
+		}
 
-	// if(ID == 0) penv->CheckCollision(probot);
-	// else clone_penv->CheckCollision(clone_probot);
-	// while(clone_penv[ID]->CheckCollision(clone_probot[ID],report)){
-	// 	int contactpoints = (int) report->contacts.size();
-	// 	if (contactpoints <= 1) break;
-	// 	double depth_max = -0.0;
-	// 	double normx = 0.0;
-	// 	double normy = 0.0;
-	// 	for (int i = 0; i < contactpoints; ++i){
-	// 		CollisionReport::CONTACT& c = report->contacts[i];
-	// 		// std::cout << "contact " << i << "depth: " << c.depth << std::endl;
-	// 		if(fabs(depth_max) < fabs(c.depth)){
-	// 			depth_max = c.depth;
-	// 			normx = c.norm.x; normy = c.norm.y;
-	// 		}
-	// 		// std::cout << "contact" << i << ": pos=("
-	// 		// 	<< c.pos.x << ", " << c.pos.y << ", " << c.pos.z << "), norm=("
-	// 		// 	<< c.norm.x << ", " << c.norm.y << ", " << c.norm.z << ")" << std::endl;
-	// 	}
+		if (fabs(depth_max) < DEPTH_TOLERENCE) break;
 
-	// 	if (fabs(depth_max) < DEPTH_TOLERENCE) break;
+		state[0] += depth_max * normx; state[1] += depth_max * normy;
+		// std::cout << "depth: " << depth_max << std::endl;
+		// std::cout << "norm: " << normx << ", " << normy << ", " << normz << std::endl;
+		for(int i = 0; i < state_dimension; ++i) {
+			if(temp_probot->GetName() == "4Claw-Gripper"){
+				values[i] = state[i] - CLAW_GRIPPER_OFFSET;
+			}
+			else {
+				values[i] = state[i];
+			}
+			// std::cout << values[i] << ", ";
+		}
+		// std::cout << std::endl;
+		temp_probot->SetActiveDOFValues(values,true);
 
-	// 	state[0] += depth_max * normx; state[1] += depth_max * normy;
-	// 	// std::cout << "depth: " << depth_max << std::endl;
-	// 	// std::cout << "norm: " << normx << ", " << normy << ", " << normz << std::endl;
-	// 	for(int i = 0; i < state_dimension; ++i) {
-	// 		if(clone_probot[ID]->GetName() == "4Claw-Gripper"){
-	// 			values[i] = state[i] - CLAW_GRIPPER_OFFSET;
-	// 		}
-	// 		else {
-	// 			values[i] = state[i];
-	// 		}
-	// 		// std::cout << values[i] << ", ";
-	// 	}
-	// 	// std::cout << std::endl;
-	// 	clone_probot[ID]->SetActiveDOFValues(values,true);
+		obstacle_collision = true;
 
-	// 	obstacle_collision = true;
-
-	// 	break;
-	// }
+		break;
+	}
 
 	return obstacle_collision;
 }
@@ -463,7 +442,7 @@ void gripper_2D_OP_t::load_openrave()
 		return;
 	}
 
-	EnvironmentMutex::scoped_lock lock(penv->GetMutex());
+	// EnvironmentMutex::scoped_lock lock(penv->GetMutex());
 
 	std::vector<RobotBasePtr> vrobots;
 	penv->GetRobots(vrobots);
@@ -482,43 +461,44 @@ void gripper_2D_OP_t::load_openrave()
 	std::cout << "Robot's name: " << probot->GetName() << std::endl;
 	std::cout << "Robot's Active DOF: " << probot->GetActiveDOF() << std::endl;
 
-	RaveInitialize(true); 
-	clone_penv = penv->CloneSelf(Clone_Bodies);
-	clone_pchecker = RaveCreateCollisionChecker(clone_penv,"ode");
-	clone_penv->SetCollisionChecker(clone_pchecker);
-	clone_penv->GetCollisionChecker()->InitEnvironment();
-	clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
+	// // RaveInitialize(true); 
+	// clone_penv = penv->CloneSelf(Clone_Bodies);
+	// // clone_pchecker = RaveCreateCollisionChecker(clone_penv,"ode");
+	// // clone_penv->SetCollisionChecker(clone_pchecker);
+	// // clone_penv->GetCollisionChecker()->InitEnvironment();
+	// // clone_penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
 
-	EnvironmentMutex::scoped_lock clone_lock(clone_penv->GetMutex());
+	// // EnvironmentMutex::scoped_lock clone_lock(clone_penv->GetMutex());
 
-	vrobots.clear();
-	clone_penv->GetRobots(vrobots);
-	// get the first body
-	if( vrobots.size() == 0 ) {
-		RAVELOG_ERROR("no robots loaded\n");
-		return;
-	}
-	clone_probot = vrobots.at(0);
+	// vrobots.clear();
+	// clone_penv->GetRobots(vrobots);
+	// // get the first body
+	// if( vrobots.size() == 0 ) {
+	// 	RAVELOG_ERROR("no robots loaded\n");
+	// 	return;
+	// }
+	// clone_probot = vrobots.at(0);
 
-	clone_probot->SetActiveDOFs(v, DOF_X | DOF_Y);
+	// clone_probot->SetActiveDOFs(v, DOF_X | DOF_Y);
 
 	// Setup thread
-	// if(num_threads >= 1) {
-	// 	std::cout << "Number of thread: " << num_threads << std::endl;
-	// 	clone_penv.clear();
-	// 	clone_probot.clear();
-	// 	clone_penv.resize(num_threads);
-	// 	clone_probot.resize(num_threads);
+	if(num_threads >= 2) {
+		std::cout << "Number of thread: " << num_threads << std::endl;
+		clone_penv.clear();
+		clone_probot.clear();
+		clone_penv.resize(num_threads-1);
+		clone_probot.resize(num_threads-1);
 
-	// 	for (int i = 0; i < num_threads; ++i)
-	// 	{
-	// 		clone_penv[i] = penv->CloneSelf(Clone_Bodies);
-	// 		clone_penv[i]->GetRobots(vrobots);
-	// 		clone_probot[i] = vrobots.at(0);
-	// 		clone_probot[i]->SetActiveDOFs(v, DOF_X | DOF_Y);
-	// 		// std::cout << i << ", " << clone_probot[i]->GetName() << ", " << clone_probot[i]->GetActiveDOF() << std::endl;
-	// 	}
-	// }
+		for (int i = 0; i < num_threads-1; ++i)
+		{
+			clone_penv[i] = penv->CloneSelf(Clone_Bodies);
+			vrobots.clear();
+			clone_penv[i]->GetRobots(vrobots);
+			clone_probot[i] = vrobots.at(0);
+			clone_probot[i]->SetActiveDOFs(v, DOF_X | DOF_Y);
+			// std::cout << i << ", " << clone_probot[i]->GetName() << ", " << clone_probot[i]->GetActiveDOF() << std::endl;
+		}
+	}
 	
 	return;
 }
