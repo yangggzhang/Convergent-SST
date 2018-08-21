@@ -52,6 +52,7 @@ namespace params
 	double b;
 	bool random_time;
 	int trial;
+	int number_of_thread;
 }
 
 #include <boost/program_options.hpp>
@@ -99,6 +100,7 @@ void read_parameters(int ac, char* av[])
 	("b",po::value<double>(&params::b),"Biased constant used in the cost function.") 
 	("random_time",po::value<bool>(&params::random_time),"Random time option for propogation.") 
 	("trial",po::value<int>(&params::trial),"Random time option for propogation.") 
+	("number_of_thread",po::value<int>(&params::number_of_thread),"Number of thread to perform collision check.") 
 	;
 
     po::variables_map varmap;

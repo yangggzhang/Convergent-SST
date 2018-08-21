@@ -51,6 +51,7 @@ namespace params
 	extern double b;
 	extern bool random_time;
 	extern int trial;
+	extern int number_of_thread;
 }
 
 void read_parameters(int ac, char* av[]);

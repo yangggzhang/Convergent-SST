@@ -28,7 +28,7 @@
 #include "omp.h"
 // #include <ode/ode.h>
 
-#define NUM_THREADS 2
+// #define NUM_THREADS 2
 
 bool check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_penv, RobotBasePtr temp_probot);
 
@@ -201,7 +201,7 @@ int main(int ac, char* av[])
 	// return 0;
 
 	/////////////////////////////////////////////////////////////////////////////////
-	omp_set_num_threads(NUM_THREADS);
+	omp_set_num_threads(params::number_of_thread);
 	read_parameters(ac,av);
 	//****************After reading in from input, we need to instantiate classes
 	init_random(time(NULL));
@@ -224,7 +224,7 @@ int main(int ac, char* av[])
 	else if(params::system=="gripper_2D_OP")
 	{
 		if(params::number_of_particles ==0) system = new gripper_2D_OP_t();
-		else system = new gripper_2D_OP_t(params::number_of_particles, NUM_THREADS);
+		else system = new gripper_2D_OP_t(params::number_of_particles, params::number_of_thread);
 	}
 
 
