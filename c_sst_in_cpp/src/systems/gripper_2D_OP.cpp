@@ -437,7 +437,7 @@ void gripper_2D_OP_t::load_openrave()
 	penv->SetCollisionChecker(pchecker);
 	penv->GetCollisionChecker()->SetCollisionOptions(CO_Contacts);
 
-	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw.env.xml")) {
+	if(!penv->Load("/home/parallels/Desktop/Convergent-SST/c_sst_in_cpp/OpenraveEnv/gripper_sys_4claw_simplified.env.xml")) {
 		std::cout << "gripper.cpp:: Error loading scene.";
 		return;
 	}

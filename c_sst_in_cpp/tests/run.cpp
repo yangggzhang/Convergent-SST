@@ -26,9 +26,9 @@
 
 #include <iostream>
 #include "omp.h"
-#include <ode/ode.h>
+// #include <ode/ode.h>
 
-#define NUM_THREADS 1
+#define NUM_THREADS 2
 
 bool check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_penv, RobotBasePtr temp_probot);
 
