@@ -15,12 +15,7 @@
 #include "utilities/random.hpp"
 #include "utilities/timer.hpp"
 
-#include "systems/pendulum.hpp"
-#include "systems/point.hpp"
-#include "systems/car.hpp"
-#include "systems/rally_car.hpp"
-#include "systems/cart_pole.hpp"
-#include "systems/two_link_acrobot.hpp"
+#include "systems/hill.hpp"
 #include "systems/climb_hill.hpp"
 #include "motion_planners/sst.hpp"
 #include "motion_planners/rrt.hpp"
@@ -40,6 +35,15 @@ int main(int ac, char* av[])
 		if(params::number_of_particles == 0) system = new climb_hill_t();
 		else system = new climb_hill_t(params::number_of_particles);
 	}
+
+	if(params::system=="hill")
+	{
+		if(params::number_of_particles == 0) system = new hill_t();
+		else system = new hill_t(params::number_of_particles);
+	}
+
+	
+	
 
 	planner_t* planner;
 	if(params::planner=="rrt")
@@ -98,7 +102,7 @@ int main(int ac, char* av[])
 		bool stats_print = false;
 		std::string filename;
 		std::stringstream ss;
-		ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/hill_system2/"<<params::planner<<"_"<<params::trial<<".txt";		filename = ss.str();
+		ss << "/home/parallels/Documents/Convergent-SST/c_sst_in_cpp/data/hill/"<<params::planner<<"_"<<params::trial<<".txt";		filename = ss.str();
 		std::ofstream myfile;
   		myfile.open (filename.c_str());
 
