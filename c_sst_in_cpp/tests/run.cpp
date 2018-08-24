@@ -28,7 +28,7 @@
 #include <iostream>
 #include "omp.h"
 
-#define NUM_THREADS 2
+#define NUM_THREADS 5
 
 int main(int ac, char* av[])
 {
