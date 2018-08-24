@@ -18,10 +18,11 @@ public:
 		control_dimension = 3;
 		temp_state = new double[state_dimension];
 		number_of_particles = 0;
+		num_threads = 0;
 		temp_particles.clear();
 	}
 
-	gripper_t(unsigned in_number_of_particles)
+	gripper_t(unsigned in_number_of_particles, int in_num_threads)
 	{
 		state_dimension = 3;
 		control_dimension = 3;
@@ -32,6 +33,7 @@ public:
 		{
 			temp_particles.push_back(new double[state_dimension]); //+1 to store the height
 		}
+		num_threads = in_num_threads;
 	}
 
 	virtual ~gripper_t(){
@@ -59,6 +61,8 @@ public:
 
 	bool check_collision(double* state);
 
+	bool check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_penv, RobotBasePtr temp_probot);
+
 	double portion_in_collision(double* point1, double* point2);
 
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
@@ -70,12 +74,23 @@ public:
 protected:
 	EnvironmentBasePtr penv;
 
+	std::vector<EnvironmentBasePtr> clone_penv;
+
+	// EnvironmentBasePtr clone_penv;
+
 	CollisionCheckerBasePtr pchecker;
+
+	// CollisionCheckerBasePtr clone_pchecker;
 
 	RobotBasePtr probot;
 
+	// RobotBasePtr clone_probot;
+
+	std::vector<RobotBasePtr> clone_probot;
+
 	std::vector<KinBodyPtr> pbodies;
 
+	int num_threads;
 };
 
 
