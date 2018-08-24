@@ -21,6 +21,7 @@
 #include "systems/gripper_2D_OP.hpp"
 #include "motion_planners/sst.hpp"
 #include "motion_planners/rrt.hpp"
+#include "motion_planners/rrt_restart.hpp"
 
 #include <openrave/openrave.h>
 
@@ -69,6 +70,14 @@ int main(int ac, char* av[])
 		if(params::number_of_particles == 0) planner = new sst_t(system);
 		else planner = new sst_t(system, params::number_of_particles, params::particle_radius,params::number_of_control);
 	}
+	else if(params::planner=="rrt_restart")
+	{
+		if (params::number_of_particles != 0 && params::number_of_control != 0)
+		{
+			planner = new rrt_restart_t(system, params::number_of_particles, params::particle_radius,params::number_of_control);
+		}
+		else planner = new rrt_restart_t(system);
+	}
 
 	planner->set_start_state(params::start_state);
 	planner->set_goal_state(params::goal_state,params::goal_radius);
@@ -111,6 +120,13 @@ int main(int ac, char* av[])
 		int count = 0;
 		bool execution_done = false;
 		bool stats_print = false;
+		std::string filename;
+		std::stringstream ss;
+		ss << "../results/"<< params::system << "_" <<params::planner<<"_"<<params::trial<<".txt";		filename = ss.str();
+		std::ofstream myfile;
+  		myfile.open (filename.c_str());
+
+		ss.str("");
 		while(true)
 		{
 			do
@@ -125,12 +141,21 @@ int main(int ac, char* av[])
 				std::vector<std::pair<double*,double> > controls;
 				planner->get_solution(controls);
 				double solution_cost = 0;
+
 				for(unsigned i=0;i<controls.size();i++)
 				{
 					solution_cost+=controls[i].second;
 				}
 				// std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				if (params::planner=="rrt_restart")
+				{
+					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<std::endl;
+					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<std::endl ;
+				}
+				else {
+					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<std::endl;
+					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				}
 				stats_print = false;
 				if(params::intermediate_visualization)
 				{

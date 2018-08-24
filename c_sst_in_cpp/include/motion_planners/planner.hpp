@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <fstream>
+#include <limits>
 
 #include "utilities/parameter_reader.hpp"
 #include "systems/system.hpp"
@@ -29,7 +30,11 @@
  */
 class planner_t
 {
-public: 
+public:
+
+	double last_solution_cost; 
+	double best_solution_cost;
+
 	/**
 	 * @brief Planner Constructor
 	 * @details Planner Constructor
@@ -45,6 +50,8 @@ public:
 		number_of_nodes=0;
 		number_of_particles = 0;
 		particle_radius = 0;
+		last_solution_cost = std::numeric_limits<double>::infinity();
+		best_solution_cost = std::numeric_limits<double>::infinity();
 	}
 
 	//ADD_KAIWEN
@@ -56,6 +63,8 @@ public:
 		number_of_nodes=0;
 		number_of_particles = in_number_of_particles;
 		particle_radius = in_particle_radius;
+		last_solution_cost = std::numeric_limits<double>::infinity();
+		best_solution_cost = std::numeric_limits<double>::infinity();
 	}
 	virtual ~planner_t()
 	{
@@ -98,6 +107,9 @@ public:
 	 * @param in_radius The radial size of the goal region centered at in_goal.
 	 */
 	virtual void set_goal_state(double* in_goal,double in_radius);
+
+
+	virtual void update_path();
 
 	/**
 	 * @brief Generate an image visualizing the tree.
@@ -223,6 +235,8 @@ protected:
  	 * @brief The stored solution from previous call to get_solution.
  	 */
     std::vector<tree_node_t*> last_solution_path;
+
+    std::vector<tree_node_t*> best_solution_path;
 
     /**
      * @brief A temporary storage for sorting nodes based on cost.

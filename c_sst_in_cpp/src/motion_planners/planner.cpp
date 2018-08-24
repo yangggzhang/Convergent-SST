@@ -240,3 +240,17 @@ void planner_t::export_edge(tree_node_t* node, std::ofstream& doc)
 		export_edge(*i,doc);
 	}
 }
+
+void planner_t::update_path()
+{
+	if (last_solution_cost < best_solution_cost && last_solution_cost > 0)
+	{
+		best_solution_path.clear();
+		for (size_t i = 0 ; i < last_solution_path.size(); i++)
+		{
+			best_solution_path.push_back(last_solution_path[i]);
+		}
+		best_solution_cost = last_solution_cost;
+		// std::cout << best_solution_cost << std::endl;
+	}
+}
