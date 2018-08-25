@@ -59,6 +59,8 @@ public:
 	
 	virtual bool valid_state();
 
+	virtual double cost_function(double* state, std::vector<double*> particles);
+
 	bool check_collision(double* state);
 
 	bool check_collision_parallel(double* state, int ID, EnvironmentBasePtr temp_penv, RobotBasePtr temp_probot);

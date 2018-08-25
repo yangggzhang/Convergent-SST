@@ -55,6 +55,8 @@ public:
 	
 	virtual bool valid_state();
 
+	virtual double cost_function(double* state, std::vector<double*> particles);
+
 	double hill_height(double* point);
 	
 	double hill_gradient_x(double* point);

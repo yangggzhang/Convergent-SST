@@ -424,6 +424,15 @@ bool gripper_t::valid_state()
 			(temp_state[2]!=MAX_Z);
 }
 
+double gripper_t::cost_function(double* state, std::vector<double*> particles) {
+	double var_cost = 0.0;
+	for (size_t i = 0; i < particles.size(); i++)
+	{
+		double alpha = 1 + 1000*portion_in_collision(state, particles[i]);
+		var_cost += alpha * distance(state, particles[i]);
+	}
+	return var_cost;
+}
 
 svg::Point gripper_t::visualize_point(double* state, svg::Dimensions dims)
 {

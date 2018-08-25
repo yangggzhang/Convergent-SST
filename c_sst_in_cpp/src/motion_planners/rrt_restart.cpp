@@ -102,7 +102,7 @@ void rrt_restart_t::restart_planning()
 
 }
 
-void rrt_restart_t::get_solution(std::vector<std::pair<double*,double> >& controls)
+void rrt_restart_t::get_solution(std::vector<std::pair<double*,double> >& controls, double &end_div)
 {
 	last_solution_path.clear();
 	system->copy_state_point(sample_state,goal_state);
@@ -121,6 +121,10 @@ void rrt_restart_t::get_solution(std::vector<std::pair<double*,double> >& contro
         }
     }
 	//now nearest should be the closest node to the goal state
+	//Calculate the divergence at the end node
+    end_div = 0;
+    if (nearest->particles.size() > 0) end_div = system->cost_function(nearest->point, nearest->particles);
+
 	if(system->distance(goal_state,nearest->point) < goal_radius)
 	{
 		std::deque<tree_node_t*> path;
@@ -272,7 +276,8 @@ void rrt_restart_t::add_to_tree()
 		// last_solution_cost = new_node->cost;
 
 		std::vector<std::pair<double*,double> > controls;
-		get_solution(controls);
+		double end_divergence;
+		get_solution(controls, end_divergence);
 		last_solution_cost = 0;
 
 		for(unsigned i=0;i<controls.size();i++)

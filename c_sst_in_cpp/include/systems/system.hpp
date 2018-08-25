@@ -158,6 +158,8 @@ public:
     //ADD_Yang
 	virtual bool convergent_propagate( const bool &random_time, double* start_state,std::vector<double*> &start_particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost ) = 0;
 
+	virtual double cost_function(double* state, std::vector<double*> particles) = 0;
+
 	/**
 	 * @brief Performs a local propagation with particles using simple numerical integration.
 	 * @details Performs a local propagation with particles using simple numerical integration.

@@ -74,7 +74,7 @@ void sst_t::setup_planning()
 	system->load_openrave();
 
 }
-void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls)
+void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls, double &end_div)
 {
 	last_solution_path.clear();
 	if(best_goal==NULL)
@@ -82,6 +82,10 @@ void sst_t::get_solution(std::vector<std::pair<double*,double> >& controls)
 	nearest = best_goal;
 	
 	//now nearest should be the closest node to the goal state
+	//Calculate the divergence at the end node
+    end_div = 0;
+    if (nearest->particles.size() > 0) end_div = system->cost_function(nearest->point, nearest->particles);
+    
 	std::deque<tree_node_t*> path;
 	while(nearest->parent!=NULL)
 	{

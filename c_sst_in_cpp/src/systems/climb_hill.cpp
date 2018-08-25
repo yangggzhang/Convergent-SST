@@ -260,3 +260,7 @@ std::string climb_hill_t::export_point(double* state)
 	s << state[0] << "," << state[1] << "," << hill_height(state) << std::endl;
 	return s.str();
 }
+
+double climb_hill_t::cost_function(double* state, std::vector<double*> particles){
+	return 0.0;
+}

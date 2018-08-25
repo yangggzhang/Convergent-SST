@@ -317,6 +317,16 @@ bool gripper_2D_t::valid_state()
 			(temp_state[1]!=MAX_Y);
 }
 
+double gripper_2D_t::cost_function(double* state, std::vector<double*> particles) {
+	double var_cost = 0.0;
+	for (size_t i = 0; i < particles.size(); i++)
+	{
+		double alpha = 1 + 1000*portion_in_collision(state, particles[i]);
+		var_cost += alpha * distance(state, particles[i]);
+	}
+	return var_cost;
+}
+
 double gripper_2D_t::portion_in_collision(double* point1, double* point2)
 {
 	// line approximation: a*x + b*y + c = 0
