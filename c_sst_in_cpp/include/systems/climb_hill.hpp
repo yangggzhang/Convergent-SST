@@ -58,7 +58,7 @@ public:
 
 	double hill_gradient_y(double* point);
 
-	double cost_function(double* state, std::vector<double*> particles)
+	double cost_function(double* state, std::vector<double*> particles);
 
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
 

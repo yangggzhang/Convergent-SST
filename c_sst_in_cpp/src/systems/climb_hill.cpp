@@ -70,7 +70,7 @@ bool climb_hill_t::propagate( double* start_state, double* control, int min_step
 
 		temp_state[0] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * cos(theta);
 		temp_state[1] += params::integration_step * u * (-2/M_PI * atan(delta_h) + 1) * sin(theta);
-		enforce_bounds();
+		enforce_bounds(temp_state);
 		validity = validity && valid_state();
 	}
 	result_state[0] = temp_state[0];
@@ -81,7 +81,7 @@ bool climb_hill_t::propagate( double* start_state, double* control, int min_step
 }
 
 
-bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_state,std::vector<double*> &start_particles, double* control, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost )
+bool climb_hill_t::convergent_propagate( const bool &random_time, double* start_state,std::vector<double*> &start_particles, double* control, int min_step, int max_step, double* result_state, std::vector<double*> &result_particles, double& duration, double& cost )
 {	
 	cost = 0.0;
 
@@ -102,6 +102,10 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 	init_vol = cost_function(temp_state,temp_particles);
 
 	double theta = control[0]; double u = control[1];
+
+	int num_steps = 0; // adjust time stamp according to input
+	if (random_time)	num_steps = uniform_int_random(min_step,max_step);
+	else num_steps =  (int)(min_step + max_step)/2;
 
 	bool validity = true;
 	//propagate state
@@ -129,7 +133,7 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 		final_vol = cost_function(temp_state,temp_particles);
 		cost += (init_vol + final_vol)/2.0*params::integration_step;
 		init_vol = final_vol;
-		enforce_bounds();
+		enforce_bounds(temp_state);
 			
 		validity = validity && valid_state();
 	}
@@ -153,17 +157,13 @@ bool climb_hill_t::convergent_propagate( const int &num_steps, double* start_sta
 	return validity;
 }
 
-void climb_hill_t::enforce_bounds()
+void climb_hill_t::enforce_bounds(double* state)
 {
-	if(temp_state[0]<MIN_X)
-		temp_state[0]=MIN_X;
-	else if(temp_state[0]>MAX_X)
-		temp_state[0]=MAX_X;
+	if(state[0]<MIN_X)	state[0]=MIN_X;
+	else if(state[0]>MAX_X)	state[0]=MAX_X;
 
-	if(temp_state[1]<MIN_Y)
-		temp_state[1]=MIN_Y;
-	else if(temp_state[1]>MAX_Y)
-		temp_state[1]=MAX_Y;
+	if(state[1]<MIN_Y)	state[1]=MIN_Y;
+	else if(state[1]>MAX_Y)	 state[1]=MAX_Y;
 }
 
 
@@ -216,10 +216,15 @@ svg::Point climb_hill_t::visualize_point(double* state, svg::Dimensions dims)
 	return svg::Point(x,y);
 }
 
-void climb_hill_t::write_point(double* state,std::ofstream &myfile)
+
+std::string climb_hill_t::export_point(double* state)
 {
-	myfile<<state[0]<<","<<state[1]<<","<<state[2]<<std::endl;
+	std::stringstream s;
+	s << state[0] << "," << state[1] << "," << state[2] << std::endl;
+	return s.str();
 }
+
+
 
 double climb_hill_t::cost_function(double* state, std::vector<double*> particles)
 {

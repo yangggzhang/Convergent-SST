@@ -1,0 +1,26 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="500px" height="500px" xmlns="http://www.w3.org/2000/svg" version="1.1" >
+	<polyline points="41.6667,250 71.6506,227.479 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="71.6506,227.479 91.8374,223.021 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="91.8374,223.021 98.023,186.253 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="98.023,186.253 106.158,164.435 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="98.023,186.253 70.3713,169.985 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="70.3713,169.985 42.7645,138.777 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="71.6506,227.479 60.3106,196.133 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="60.3106,196.133 42.3687,213.543 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="42.3687,213.543 18.7974,221.873 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="71.6506,227.479 84.3399,267.166 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="84.3399,267.166 52.148,291.352 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="52.148,291.352 27.7251,307.296 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="27.7251,307.296 16.8184,271.417 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="52.148,291.352 72.9,317.438 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="72.9,317.438 97.3689,307.951 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="97.3689,307.951 89.1764,334.031 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="97.3689,307.951 75.874,325.668 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="97.3689,307.951 85.3457,328.106 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<polyline points="72.9,317.438 85.8762,291.317 " fill="transparent" stroke-width="0.5" stroke="rgb(0,0,255)" />
+	<circle cx="41.6667" cy="250" r="2" fill="rgb(255,0,0)" />
+	<circle cx="458.333" cy="250" r="2" fill="rgb(0,255,0)" />
+	<polyline points="41.6667,250 74.1494,257.482 95.1764,252.639 102.418,243.804 85.7936,195.988 75.2685,164.36 93.1331,146.871 117.388,140.812 123.454,156.706 139.598,150.803 155.245,112.068 169.865,86.8301 190.047,81.6611 227.533,82.6888 240.32,56.4746 275.357,43.1092 286.574,70.0324 314.395,78.7909 319.099,45.7911 313.13,82.813 329.466,101.738 353.025,93.3739 384.073,105.502 416.918,131.141 438.791,161.601 433.979,186.133 461.64,211.454 462.315,240.613 " fill="transparent" stroke-width="3" stroke="rgb(0,0,0)" />
+</svg>
