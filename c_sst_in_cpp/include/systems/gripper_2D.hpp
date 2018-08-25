@@ -119,6 +119,8 @@ public:
 	
 	virtual bool valid_state();
 
+	virtual double cost_function(double* state, std::vector<double*> particles);
+
 	bool check_collision(double* state);
 
 	int location_in_obstacle(double* state, int obstacles_id, double* corners, double* curv_cen);

@@ -83,7 +83,7 @@ public:
 	 * 
 	 * @param controls The list of controls and durations which comprise the solution.
 	 */
-	virtual void get_solution(std::vector<std::pair<double*,double> >& controls) = 0;
+	virtual void get_solution(std::vector<std::pair<double*,double> >& controls, double &end_div) = 0;
 
 	/**
 	 * @brief Perform an iteration of a motion planning algorithm.

@@ -101,13 +101,14 @@ int main(int ac, char* av[])
 		}
 		while(!checker.check());
 		std::vector<std::pair<double*,double> > controls;
-		planner->get_solution(controls);
+		double end_divergence;
+		planner->get_solution(controls, end_divergence);
 		double solution_cost = 0;
 		for(unsigned i=0;i<controls.size();i++)
 		{
 			solution_cost+=controls[i].second;
 		}
-		std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
+		std::cout<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<"," << end_divergence << std::endl ;
 		std::cout<<"check!!!"<<params::trial<<std::endl;
 		// planner->visualize_tree(params::trial);
 		// planner->visualize_nodes(params::trial);
@@ -139,7 +140,8 @@ int main(int ac, char* av[])
 			if(stats_print)
 			{
 				std::vector<std::pair<double*,double> > controls;
-				planner->get_solution(controls);
+				double end_divergence;
+				planner->get_solution(controls, end_divergence);
 				double solution_cost = 0;
 
 				for(unsigned i=0;i<controls.size();i++)
@@ -149,12 +151,12 @@ int main(int ac, char* av[])
 				// std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
 				if (params::planner=="rrt_restart")
 				{
-					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<std::endl;
-					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<std::endl ;
+					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<"," <<end_divergence<<std::endl;
+					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<" EndPoint Divergence: " << end_divergence<<std::endl ;
 				}
 				else {
-					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<std::endl;
-					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<"," <<end_divergence<<std::endl;
+					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<" EndPoint Divergence: " << end_divergence<<std::endl ;
 				}
 				stats_print = false;
 				if(params::intermediate_visualization)
@@ -171,14 +173,23 @@ int main(int ac, char* av[])
 			if (execution_done)
 			{
 				std::vector<std::pair<double*,double> > controls;
-				planner->get_solution(controls);
+				double end_divergence;
+				planner->get_solution(controls, end_divergence);
 				double solution_cost = 0;
 				for(unsigned i=0;i<controls.size();i++)
 				{
 					solution_cost+=controls[i].second;
 				}
 				// std::cout<<checker.time()<<" "<<checker.iterations()<<" "<<planner->number_of_nodes<<" " <<solution_cost<<std::endl ;
-				std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<std::endl ;
+				if (params::planner=="rrt_restart")
+				{
+					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<planner->best_solution_cost<<"," <<end_divergence<<std::endl;
+					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<planner->best_solution_cost<<" EndPoint Divergence: " << end_divergence<<std::endl ;
+				}
+				else {
+					myfile<<checker.time()<<","<<checker.iterations()<<","<<planner->number_of_nodes<<"," <<solution_cost<<"," <<end_divergence<<std::endl;
+					std::cout<<"Time: "<<checker.time()<<" Iterations: "<<checker.iterations()<<" Nodes: "<<planner->number_of_nodes<<" Solution Quality: " <<solution_cost<<" EndPoint Divergence: " << end_divergence<<std::endl ;
+				}
 				// planner->visualize_tree(params::trial);
 				// planner->visualize_nodes(params::trial);
 				planner->export_solution_path(params::trial);

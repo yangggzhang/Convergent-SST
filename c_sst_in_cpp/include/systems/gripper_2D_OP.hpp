@@ -57,6 +57,8 @@ public:
 	
 	virtual bool valid_state();
 
+	virtual double cost_function(double* state, std::vector<double*> particles);
+
 	bool check_collision(double* state);
 
 	double portion_in_collision(double* point1, double* point2);

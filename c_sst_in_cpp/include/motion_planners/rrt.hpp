@@ -49,7 +49,7 @@ public:
 	/**
 	 * @copydoc planner_t::get_solution(std::vector<std::pair<double*,double> >&)
 	 */
-	virtual void get_solution(std::vector<std::pair<double*,double> >& controls);
+	virtual void get_solution(std::vector<std::pair<double*,double> >& controls, double &end_div);
 
 	/**
 	 * @copydoc planner_t::step()
