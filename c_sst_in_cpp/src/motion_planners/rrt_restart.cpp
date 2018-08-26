@@ -108,7 +108,9 @@ void rrt_restart_t::get_solution(std::vector<std::pair<double*,double> >& contro
 	//now nearest should be the closest node to the goal state
     //Calculate the divergence at the end node
     end_div = 0;
-    if (nearest->particles.size() > 0) end_div = system->cost_function(nearest->point, nearest->particles);
+    if (!best_solution_path.empty())
+	    if (best_solution_path.back()->particles.size() > 0) 
+	    	end_div = system->cost_function(best_solution_path.back()->point, best_solution_path.back()->particles);
 
 	if(system->distance(goal_state,nearest->point) < goal_radius)
 	{
