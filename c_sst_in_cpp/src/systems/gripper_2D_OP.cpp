@@ -266,6 +266,8 @@ bool gripper_2D_OP_t::check_collision(double* state)
 		probot->SetActiveDOFValues(values,true);
 
 		obstacle_collision = true;
+
+		break;
 	}
 
 	return obstacle_collision;

@@ -41,6 +41,17 @@ if __name__ == "__main__":
 		env.Load('../OpenraveEnv/gripper_sys_4claw.env.xml')
 		time.sleep(0.1)
 
+		handles = []
+		handles.append(env.plot3(points=array([-3, 2, 0]),
+							pointsize=0.2,
+							colors=array([0, 0, 1]),
+							drawstyle=1))
+
+		handles.append(env.plot3(points=array([3, -1, 0]),
+							pointsize=0.2,
+							colors=array([1, 0, 0]),
+							drawstyle=1))
+
 		raw_input("Press any key to show the solution path...")
 
 		robot = env.GetRobots()[0]
