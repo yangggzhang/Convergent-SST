@@ -4,24 +4,33 @@
  * 
  */
 
-#ifndef SPARSE_GRIPPER_2D_OP_HPP
-#define SPARSE_GRIPPER_2D_OP_HPP
+#ifndef SPARSE_GRIPPER_2D_EG_HPP
+#define SPARSE_GRIPPER_2D_EG_HPP
 
 #include "systems/system.hpp"
+#include "systems/gripper_2D.hpp"
+#include <math.h>
 
-class gripper_2D_OP_t : public system_t
+
+class gripper_2D_EG_t : public system_t
 {
 public:
-	gripper_2D_OP_t()
+	gripper_2D_EG_t()
 	{
 		state_dimension = 2;
 		control_dimension = 2;
 		temp_state = new double[state_dimension];
 		number_of_particles = 0;
 		temp_particles.clear();
+		obstacles.push_back(Rectangle_t(   0,  	  -0.05,     4,   0.05,  0.5));
+		// obstacles.push_back(Rectangle_t(  2.5,  -0.5,   3.5, 3, 0.5));
+		// obstacles.push_back(Rectangle_t(   2,    -2,   2.25,  0,  0.5));
+
+		flag = false;
+		count = 0;
 	}
 
-	gripper_2D_OP_t(unsigned in_number_of_particles)
+	gripper_2D_EG_t(unsigned in_number_of_particles)
 	{
 		state_dimension = 2;
 		control_dimension = 2;
@@ -32,11 +41,15 @@ public:
 		{
 			temp_particles.push_back(new double[state_dimension]); //+1 to store the height
 		}
+		obstacles.push_back(Rectangle_t(   0,  	  -0.025,     4,   0.025,  0.5));
+		// obstacles.push_back(Rectangle_t(  2.5,  -0.5,   3.5, 3, 0.5));
+		// obstacles.push_back(Rectangle_t(   2,    -2,   2.25,  0,  0.5));
+
+		flag = false;
+		count = 0;
 	}
 
-	virtual ~gripper_2D_OP_t(){
-		RaveDestroy();
-	}
+	virtual ~gripper_2D_EG_t(){}
 
 	virtual double distance(double* point1, double* point2);
 
@@ -61,23 +74,25 @@ public:
 
 	bool check_collision(double* state);
 
+	int location_in_obstacle(double* state, int obstacles_id, double* corners, double* curv_cen);
+
+	int enforce_obstacle_bounds(double* state, int obstacles_id, double* corners, double* curv_cen, double lower_angle_bound, double upper_angle_bound);
+
 	double portion_in_collision(double* point1, double* point2);
 
 	svg::Point visualize_point(double* state, svg::Dimensions dims);
 
 	std::string export_point(double* state);
 
-	virtual void load_openrave();
+	virtual void load_openrave(){
+		return;
+	};
 
 protected:
-	EnvironmentBasePtr penv;
 
-	CollisionCheckerBasePtr pchecker;
-
-	RobotBasePtr probot;
-
-	std::vector<KinBodyPtr> pbodies;
-
+	std::vector<Rectangle_t> obstacles;
+	bool flag;
+	int count;
 };
 
 

@@ -18,9 +18,9 @@
 // #include <openrave/openrave.h>
 // #include <openrave/plugin.h>
 // #include <boost/bind.hpp>
-#include <openrave-core.h>
+// #include <openrave-core.h>
 
-using namespace OpenRAVE;
+// using namespace OpenRAVE;
 
 /**
  * @brief A base class for plannable systems.

@@ -16,14 +16,15 @@
 #include "utilities/timer.hpp"
 
 #include "systems/climb_hill.hpp"
-#include "systems/gripper.hpp"
+// #include "systems/gripper.hpp"
 #include "systems/gripper_2D.hpp"
-#include "systems/gripper_2D_OP.hpp"
+// #include "systems/gripper_2D_OP.hpp"
+#include "systems/gripper_2D_EG.hpp"
 #include "motion_planners/sst.hpp"
 #include "motion_planners/rrt.hpp"
 #include "motion_planners/rrt_restart.hpp"
 
-#include <openrave/openrave.h>
+// #include <openrave/openrave.h>
 
 #include <iostream>
 
@@ -38,21 +39,26 @@ int main(int ac, char* av[])
 		if(params::number_of_particles == 0) system = new climb_hill_t();
 		else system = new climb_hill_t(params::number_of_particles);
 	}
-	else if(params::system=="gripper")
-	{
-		if(params::number_of_particles == 0) system = new gripper_t();
-		else system = new gripper_t(params::number_of_particles);
-	}
+	// else if(params::system=="gripper")
+	// {
+	// 	if(params::number_of_particles == 0) system = new gripper_t();
+	// 	else system = new gripper_t(params::number_of_particles);
+	// }
 	else if(params::system=="gripper_2D")
 	{
 		if(params::number_of_particles ==0) system = new gripper_2D_t();
 		else system = new gripper_2D_t(params::number_of_particles);
 	}
-	else if(params::system=="gripper_2D_OP")
+	else if(params::system=="gripper_2D_EG")
 	{
-		if(params::number_of_particles ==0) system = new gripper_2D_OP_t();
-		else system = new gripper_2D_OP_t(params::number_of_particles);
+		if(params::number_of_particles ==0) system = new gripper_2D_EG_t();
+		else system = new gripper_2D_EG_t(params::number_of_particles);
 	}
+	// else if(params::system=="gripper_2D_OP")
+	// {
+	// 	if(params::number_of_particles ==0) system = new gripper_2D_OP_t();
+	// 	else system = new gripper_2D_OP_t(params::number_of_particles);
+	// }
 
 
 	planner_t* planner;
@@ -113,8 +119,8 @@ int main(int ac, char* av[])
 		// planner->visualize_tree(params::trial);
 		// planner->visualize_nodes(params::trial);
 		planner->export_solution_path(params::trial);
-		// planner->export_nodes(params::trial);
-		// planner->export_tree(params::trial);
+		planner->export_nodes(params::trial);
+		planner->export_tree(params::trial);
 	}
 	else
 	{
@@ -193,8 +199,8 @@ int main(int ac, char* av[])
 				// planner->visualize_tree(params::trial);
 				// planner->visualize_nodes(params::trial);
 				planner->export_solution_path(params::trial);
-				// planner->export_nodes(params::trial);
-				// planner->export_tree(params::trial);
+				planner->export_nodes(params::trial);
+				planner->export_tree(params::trial);
 				break;
 			}
 		}
