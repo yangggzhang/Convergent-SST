@@ -1,6 +1,10 @@
 # Convergent-SST
 
-Sparse methods for convergent planning
+[Asymptotically Near-Optimal Methods for Kinodynamic Planning With Initial State]( Uncertainty[https://ieeexplore.ieee.org/abstract/document/8643393)
+
+Kaiwen Liu, Yang Zhang, Andrew Dobson, Dmitry Berenson
+
+Published in: IEEE Robotics and Automation Letters ( Volume: 4 , Issue: 2 , April 2019 )
 
 All source codes are in src
 The main files are Convergent_SST.m and B_RRT.m(biased convergent planning without using sparse methods)
